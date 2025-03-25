@@ -1,13 +1,14 @@
 {
     "Name": "example-xml",
     "ConnectionString": "Server=VM2K22;Database=600;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;",
-    "Query": "SELECT cmp_code, cmp_wwn, cmp_name FROM dbo.cicmpy",
+    "Query": "SELECT TRIM(cmp_code) As CompanyCode, cmp_wwn As CompanyId, cmp_name As CompanyName FROM dbo.cicmpy ",
     "Format": "XML",
     "OutputDirectory": ".\\output\\xml",
     "OutputProperties": {
       "XML": {
         "AppendHeader": true,
-        "RootNode": "Companies"
+        "RootNode": "Companies",
+        "RowNode": "Company"
       }
     }
   }

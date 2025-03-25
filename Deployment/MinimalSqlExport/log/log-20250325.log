@@ -1,6 +1,206 @@
 2025-03-25 16:56:27.549 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\output\items\output_20250325_165627.csv
 2025-03-25 17:10:43.953 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\output\yaml\output_20250325_171043.yaml
-2025-03-25 17:12:31.978 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Deployment\MinimalSqlExport\output\csv\output_20250325_171231.csv
-2025-03-25 17:12:39.301 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Deployment\MinimalSqlExport\output\json\output_20250325_171239.json
-2025-03-25 17:12:43.516 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Deployment\MinimalSqlExport\output\xml\output_20250325_171243.xml
-2025-03-25 17:12:53.490 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Deployment\MinimalSqlExport\output\yaml\output_20250325_171253.yaml
+2025-03-25 17:15:42.062 +01:00 [ERR] SQL Error executing query: The FOR XML and FOR JSON clauses are invalid in views, inline functions, derived tables, and subqueries when they contain a set operator. To work around, wrap the SELECT containing a set operator using derived table or common table expression or view and apply FOR XML or FOR JSON on top of it.
+Microsoft.Data.SqlClient.SqlException (0x80131904): The FOR XML and FOR JSON clauses are invalid in views, inline functions, derived tables, and subqueries when they contain a set operator. To work around, wrap the SELECT containing a set operator using derived table or common table expression or view and apply FOR XML or FOR JSON on top of it.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+   at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader()
+   at MinimalSqlExport.Program.<>c__DisplayClass9_1.<ExecuteQuery>b__1(StatusContext ctx) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 460
+ClientConnectionId:ba4c3a32-f9cc-482d-beaa-958f470adde8
+Error Number:1086,State:1,Class:15
+2025-03-25 17:15:42.363 +01:00 [ERR] Failed query: SELECT TRIM(cmp_code) As CompanyCode, cmp_wwn, cmp_name, (SELECT 1 As Value UNION SELECT 2 As Value FOR XML AUTO) As Values FROM dbo.cicmpy
+2025-03-25 17:15:42.386 +01:00 [ERR] Operation failed in interactive mode
+Microsoft.Data.SqlClient.SqlException (0x80131904): The FOR XML and FOR JSON clauses are invalid in views, inline functions, derived tables, and subqueries when they contain a set operator. To work around, wrap the SELECT containing a set operator using derived table or common table expression or view and apply FOR XML or FOR JSON on top of it.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+   at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader()
+   at MinimalSqlExport.Program.<>c__DisplayClass9_1.<ExecuteQuery>b__1(StatusContext ctx) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 460
+   at Spectre.Console.Status.<>c__DisplayClass14_0.<Start>b__0(StatusContext ctx) in /_/src/Spectre.Console/Live/Status/Status.cs:line 44
+   at Spectre.Console.Status.<>c__DisplayClass16_0.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Status/Status.cs:line 79
+--- End of stack trace from previous location ---
+   at Spectre.Console.Status.<>c__DisplayClass17_0`1.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Status/Status.cs:line 120
+--- End of stack trace from previous location ---
+   at Spectre.Console.Progress.<>c__DisplayClass32_0`1.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 138
+--- End of stack trace from previous location ---
+   at Spectre.Console.Internal.DefaultExclusivityMode.RunAsync[T](Func`1 func) in /_/src/Spectre.Console/Internal/DefaultExclusivityMode.cs:line 40
+   at Spectre.Console.Progress.StartAsync[T](Func`2 action) in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 121
+   at Spectre.Console.Status.StartAsync[T](String status, Func`2 func) in /_/src/Spectre.Console/Live/Status/Status.cs:line 117
+   at Spectre.Console.Status.StartAsync(String status, Func`2 action) in /_/src/Spectre.Console/Live/Status/Status.cs:line 77
+   at Spectre.Console.Status.Start(String status, Action`1 action) in /_/src/Spectre.Console/Live/Status/Status.cs:line 48
+   at MinimalSqlExport.Program.ExecuteQuery(String profile, String query, String format, String customOutputPath) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 455
+   at MinimalSqlExport.Program.RunConsole() in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 228
+ClientConnectionId:ba4c3a32-f9cc-482d-beaa-958f470adde8
+Error Number:1086,State:1,Class:15
+2025-03-25 17:16:14.485 +01:00 [ERR] SQL Error executing query: Incorrect syntax near the keyword 'Values'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Incorrect syntax near the keyword 'Values'.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+   at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader()
+   at MinimalSqlExport.Program.<>c__DisplayClass9_1.<ExecuteQuery>b__1(StatusContext ctx) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 460
+ClientConnectionId:cfdc2b21-386f-48fa-ad68-52fda0e70b10
+Error Number:156,State:1,Class:15
+2025-03-25 17:16:14.555 +01:00 [ERR] Failed query: SELECT TRIM(cmp_code) As CompanyCode, cmp_wwn, cmp_name As Values FROM dbo.cicmpy FOR XML PATH
+2025-03-25 17:16:14.583 +01:00 [ERR] SQL Error executing query: Incorrect syntax near the keyword 'Values'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Incorrect syntax near the keyword 'Values'.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+   at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader()
+   at MinimalSqlExport.Program.<>c__DisplayClass9_1.<ExecuteQuery>b__1(StatusContext ctx) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 460
+   at Spectre.Console.Status.<>c__DisplayClass14_0.<Start>b__0(StatusContext ctx) in /_/src/Spectre.Console/Live/Status/Status.cs:line 44
+   at Spectre.Console.Status.<>c__DisplayClass16_0.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Status/Status.cs:line 79
+--- End of stack trace from previous location ---
+   at Spectre.Console.Status.<>c__DisplayClass17_0`1.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Status/Status.cs:line 120
+--- End of stack trace from previous location ---
+   at Spectre.Console.Progress.<>c__DisplayClass32_0`1.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 138
+--- End of stack trace from previous location ---
+   at Spectre.Console.Internal.DefaultExclusivityMode.RunAsync[T](Func`1 func) in /_/src/Spectre.Console/Internal/DefaultExclusivityMode.cs:line 40
+   at Spectre.Console.Progress.StartAsync[T](Func`2 action) in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 121
+   at Spectre.Console.Status.StartAsync[T](String status, Func`2 func) in /_/src/Spectre.Console/Live/Status/Status.cs:line 117
+   at Spectre.Console.Status.StartAsync(String status, Func`2 action) in /_/src/Spectre.Console/Live/Status/Status.cs:line 77
+   at Spectre.Console.Status.Start(String status, Action`1 action) in /_/src/Spectre.Console/Live/Status/Status.cs:line 48
+   at MinimalSqlExport.Program.ExecuteQuery(String profile, String query, String format, String customOutputPath) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 455
+   at MinimalSqlExport.Program.ExecuteQueryWithStatus(String profile, String query, String format, FileInfo output) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 328
+ClientConnectionId:cfdc2b21-386f-48fa-ad68-52fda0e70b10
+Error Number:156,State:1,Class:15
+2025-03-25 17:16:14.616 +01:00 [ERR] SQL Error 156: Incorrect syntax near the keyword 'Values'. at Line 1
+2025-03-25 17:16:42.204 +01:00 [ERR] SQL Error executing query: Incorrect syntax near the keyword 'Values'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Incorrect syntax near the keyword 'Values'.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+   at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader()
+   at MinimalSqlExport.Program.<>c__DisplayClass9_1.<ExecuteQuery>b__1(StatusContext ctx) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 460
+ClientConnectionId:4c8e1b00-52da-4c78-b956-57523e7f7d74
+Error Number:156,State:1,Class:15
+2025-03-25 17:16:42.479 +01:00 [ERR] Failed query: SELECT TRIM(cmp_code) As CompanyCode, cmp_wwn, cmp_name As Values FROM dbo.cicmpy FOR XML PATH
+2025-03-25 17:16:42.577 +01:00 [ERR] SQL Error executing query: Incorrect syntax near the keyword 'Values'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Incorrect syntax near the keyword 'Values'.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+   at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader()
+   at MinimalSqlExport.Program.<>c__DisplayClass9_1.<ExecuteQuery>b__1(StatusContext ctx) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 460
+   at Spectre.Console.Status.<>c__DisplayClass14_0.<Start>b__0(StatusContext ctx) in /_/src/Spectre.Console/Live/Status/Status.cs:line 44
+   at Spectre.Console.Status.<>c__DisplayClass16_0.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Status/Status.cs:line 79
+--- End of stack trace from previous location ---
+   at Spectre.Console.Status.<>c__DisplayClass17_0`1.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Status/Status.cs:line 120
+--- End of stack trace from previous location ---
+   at Spectre.Console.Progress.<>c__DisplayClass32_0`1.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 138
+--- End of stack trace from previous location ---
+   at Spectre.Console.Internal.DefaultExclusivityMode.RunAsync[T](Func`1 func) in /_/src/Spectre.Console/Internal/DefaultExclusivityMode.cs:line 40
+   at Spectre.Console.Progress.StartAsync[T](Func`2 action) in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 121
+   at Spectre.Console.Status.StartAsync[T](String status, Func`2 func) in /_/src/Spectre.Console/Live/Status/Status.cs:line 117
+   at Spectre.Console.Status.StartAsync(String status, Func`2 action) in /_/src/Spectre.Console/Live/Status/Status.cs:line 77
+   at Spectre.Console.Status.Start(String status, Action`1 action) in /_/src/Spectre.Console/Live/Status/Status.cs:line 48
+   at MinimalSqlExport.Program.ExecuteQuery(String profile, String query, String format, String customOutputPath) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 455
+   at MinimalSqlExport.Program.ExecuteQueryWithStatus(String profile, String query, String format, FileInfo output) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 328
+ClientConnectionId:4c8e1b00-52da-4c78-b956-57523e7f7d74
+Error Number:156,State:1,Class:15
+2025-03-25 17:16:42.722 +01:00 [ERR] SQL Error 156: Incorrect syntax near the keyword 'Values'. at Line 1
+2025-03-25 17:16:51.503 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\output\xml\output_20250325_171651.xml
+2025-03-25 17:18:33.664 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\output\xml\output_20250325_171833.xml
+2025-03-25 17:52:15.517 +01:00 [INF] Detected and formatted SQL Server FOR JSON result
+2025-03-25 17:52:15.604 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\output\generic\output_20250325_175215.auto
+2025-03-25 17:52:26.919 +01:00 [ERR] SQL Error executing query: Incorrect syntax near 'FOR'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Incorrect syntax near 'FOR'.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+   at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader()
+   at MinimalSqlExport.Program.<>c__DisplayClass10_1.<ExecuteQuery>b__1(StatusContext ctx) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 462
+ClientConnectionId:bd38caa7-dcd9-4d6c-be77-0c12153a83af
+Error Number:102,State:11,Class:15
+2025-03-25 17:52:27.039 +01:00 [ERR] Failed query: SELECT TOP 10 * FROM dbo.cicmpy FOR PATH('Customer'), ROOT('Customers')
+2025-03-25 17:52:27.074 +01:00 [ERR] Operation failed in interactive mode
+Microsoft.Data.SqlClient.SqlException (0x80131904): Incorrect syntax near 'FOR'.
+   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+   at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader()
+   at MinimalSqlExport.Program.<>c__DisplayClass10_1.<ExecuteQuery>b__1(StatusContext ctx) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 462
+   at Spectre.Console.Status.<>c__DisplayClass14_0.<Start>b__0(StatusContext ctx) in /_/src/Spectre.Console/Live/Status/Status.cs:line 44
+   at Spectre.Console.Status.<>c__DisplayClass16_0.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Status/Status.cs:line 79
+--- End of stack trace from previous location ---
+   at Spectre.Console.Status.<>c__DisplayClass17_0`1.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Status/Status.cs:line 120
+--- End of stack trace from previous location ---
+   at Spectre.Console.Progress.<>c__DisplayClass32_0`1.<<StartAsync>b__0>d.MoveNext() in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 138
+--- End of stack trace from previous location ---
+   at Spectre.Console.Internal.DefaultExclusivityMode.RunAsync[T](Func`1 func) in /_/src/Spectre.Console/Internal/DefaultExclusivityMode.cs:line 40
+   at Spectre.Console.Progress.StartAsync[T](Func`2 action) in /_/src/Spectre.Console/Live/Progress/Progress.cs:line 121
+   at Spectre.Console.Status.StartAsync[T](String status, Func`2 func) in /_/src/Spectre.Console/Live/Status/Status.cs:line 117
+   at Spectre.Console.Status.StartAsync(String status, Func`2 action) in /_/src/Spectre.Console/Live/Status/Status.cs:line 77
+   at Spectre.Console.Status.Start(String status, Action`1 action) in /_/src/Spectre.Console/Live/Status/Status.cs:line 48
+   at MinimalSqlExport.Program.ExecuteQuery(String profile, String query, String format, String customOutputPath) in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 457
+   at MinimalSqlExport.Program.RunConsole() in C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\Program.cs:line 228
+ClientConnectionId:bd38caa7-dcd9-4d6c-be77-0c12153a83af
+Error Number:102,State:11,Class:15
+2025-03-25 17:52:50.584 +01:00 [INF] Detected and formatted SQL Server FOR XML result
+2025-03-25 17:52:50.711 +01:00 [INF] Output successfully written to: C:\Github\minimalsqlexport\Source\MinimalSqlExport\MinimalSqlExport.Core\output\generic\output_20250325_175250.auto
