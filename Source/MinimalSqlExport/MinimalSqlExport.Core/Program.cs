@@ -17,7 +17,7 @@ namespace MinimalSqlExport
 {
     partial class Program
     {
-        // Error codes for better diagnostics
+        
         private enum ErrorCodes
         {
             Success = 0,
@@ -163,7 +163,7 @@ namespace MinimalSqlExport
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[yellow]Available profiles:[/]");
             
-            // Create a sorted list of profile keys
+            
             var sortedProfiles = Profiles.Keys.OrderBy(k => k).ToList();
             
             if (sortedProfiles.Count == 0)
@@ -172,7 +172,7 @@ namespace MinimalSqlExport
                 return;
             }
             
-            // Display profiles with numbers
+            
             for (int i = 0; i < sortedProfiles.Count; i++)
             {
                 AnsiConsole.MarkupLine($" {i+1}. [aqua]{sortedProfiles[i]}[/]");
@@ -182,15 +182,15 @@ namespace MinimalSqlExport
             var input = Console.ReadLine()?.Trim() ?? "";
             
             string profile;
-            // Try to parse input as a number
+            
             if (int.TryParse(input, out int profileIndex) && profileIndex >= 1 && profileIndex <= sortedProfiles.Count)
             {
-                // User entered a valid number, convert to profile name
+                
                 profile = sortedProfiles[profileIndex - 1];
             }
             else
             {
-                // User entered a name or invalid number
+                
                 profile = input;
             }
             
@@ -200,7 +200,7 @@ namespace MinimalSqlExport
                 return;
             }
             
-            // Display selected profile
+            
             AnsiConsole.MarkupLine($"[green]Using profile:[/] [blue]{profile}[/]");
 
             Console.Write("Use default query from profile? (Y/N) [Y]: ");
@@ -274,9 +274,8 @@ namespace MinimalSqlExport
                     return (int)ErrorCodes.ProfileNotFound;
                 }
                 
-                string customOutputPath = output?.FullName;
+                string customOutputPath = output?.FullName ?? string.Empty;
                 
-                // Validate input parameters
                 if (string.IsNullOrWhiteSpace(format))
                 {
                     format = Profiles[profile].Format;
@@ -306,7 +305,7 @@ namespace MinimalSqlExport
                     }
                 }
                 
-                // Validate output path if specified
+                
                 if (!string.IsNullOrWhiteSpace(customOutputPath))
                 {
                     try
@@ -326,7 +325,7 @@ namespace MinimalSqlExport
                 }
                 
                 ExecuteQuery(profile, query, format, customOutputPath);
-                return (int)ErrorCodes.Success; // Success
+                return (int)ErrorCodes.Success; 
             }
             catch (SqlException ex)
             {
@@ -372,7 +371,7 @@ namespace MinimalSqlExport
             }
         }
 
-        private static readonly JsonSerializerOptions CachedJsonOptions = new JsonSerializerOptions { WriteIndented = true }; // Cache reusable instance
+        private static readonly JsonSerializerOptions CachedJsonOptions = new JsonSerializerOptions { WriteIndented = true }; 
 
         static void ExecuteQuery(string profile, string query, string format, string? customOutputPath = null)
         {
@@ -419,11 +418,11 @@ namespace MinimalSqlExport
                             ctx.Status("Connection failed");
                             Log.Error(ex, "SQL Connection error: {Message}", ex.Message);
                             
-                            // Additional diagnostic information
+                            
                             if (ex.InnerException != null)
                                 Log.Error(ex.InnerException, "Inner exception: {Message}", ex.InnerException.Message);
                             
-                            // Log connection details (with sensitive info masked)
+                            
                             Log.Error("Connection failed to: {Connection}", 
                                 MaskConnectionString(connString));
                             
@@ -441,7 +440,7 @@ namespace MinimalSqlExport
             }
             catch (Exception)
             {
-                // The error is already logged in the status block above
+                
                 AnsiConsole.MarkupLine("[red]Failed to connect to database.[/]");
                 throw;
             }
@@ -451,8 +450,8 @@ namespace MinimalSqlExport
             try
             {
                 using var command = new SqlCommand(query, connection);
-                // Add command timeout from profile settings if available
-                command.CommandTimeout = profileData.CommandTimeout ?? 30; // Default to 30 seconds
+                
+                command.CommandTimeout = profileData.CommandTimeout ?? 30; 
                 
                 AnsiConsole.Status()
                     .Start("Executing query...", ctx => 
@@ -488,7 +487,7 @@ namespace MinimalSqlExport
                             ctx.Status("Query execution failed");
                             Log.Error(ex, "SQL Error executing query: {Message}", ex.Message);
                             
-                            // Log the problematic query (truncated if very long)
+                            
                             var truncatedQuery = query.Length > 500 ? query.Substring(0, 500) + "..." : query;
                             Log.Error("Failed query: {Query}", truncatedQuery);
                             throw;
@@ -497,39 +496,39 @@ namespace MinimalSqlExport
             }
             catch (Exception)
             {
-                // The error is already logged in the status block above
+                
                 AnsiConsole.MarkupLine("[red]Failed to execute query.[/]");
                 throw;
             }
 
             var output = new StringBuilder();
+            string fileExtension = format.ToLower();  
             
             try
             {
-            switch (format.ToUpper())
-            {
-                case "AUTO":
-                    FormatWithAutoDetection(rows, output, outputProps);
-                    break;
-                case "JSON":
-                    FormatAsJson(rows, output, outputProps?.JSON);
-                    break;
-                case "XML":
-                    FormatAsXml(rows, output, outputProps?.XML);
-                    break;
-                case "YAML":
-                    FormatAsYaml(rows, output, outputProps?.YAML);
-                    break;
-                case "CSV":
-                case "TAB":
-                    FormatAsDelimited(rows, output, format, outputProps?.CSV);
-                    break;
-                default:
-                    Log.Error("Unsupported format: {Format}", format);
-                    AnsiConsole.MarkupLine("[red]Unsupported format.[/]");
-                    return;
-            }
-
+                switch (format.ToUpper())
+                {
+                    case "AUTO":
+                        fileExtension = FormatWithAutoDetection(rows, output, outputProps);
+                        break;
+                    case "JSON":
+                        FormatAsJson(rows, output, outputProps?.JSON);
+                        break;
+                    case "XML":
+                        FormatAsXml(rows, output, outputProps?.XML);
+                        break;
+                    case "YAML":
+                        FormatAsYaml(rows, output, outputProps?.YAML);
+                        break;
+                    case "CSV":
+                    case "TAB":
+                        FormatAsDelimited(rows, output, format, outputProps?.CSV);
+                        break;
+                    default:
+                        Log.Error("Unsupported format: {Format}", format);
+                        AnsiConsole.MarkupLine("[red]Unsupported format.[/]");
+                        return;
+                }
             }
             catch (Exception ex)
             {
@@ -543,9 +542,9 @@ namespace MinimalSqlExport
             {
                 if (!string.IsNullOrWhiteSpace(customOutputPath))
                 {
-                    // Use custom output path if provided
+                    
                     outputPath = customOutputPath;
-                    // Ensure directory exists
+                    
                     var dirName = Path.GetDirectoryName(outputPath);
                     if (!string.IsNullOrEmpty(dirName))
                     {
@@ -554,8 +553,8 @@ namespace MinimalSqlExport
                 }
                 else
                 {
-                    // Use default path from profile
-                    var fileName = $"output_{DateTime.Now:yyyyMMdd_HHmmss}.{format.ToLower()}";
+                    
+                    var fileName = $"output_{DateTime.Now:yyyyMMdd_HHmmss}.{fileExtension.ToLower()}";
                     var outputDir = string.IsNullOrWhiteSpace(profileData.OutputDirectory)
                         ? Directory.GetCurrentDirectory()
                         : Path.GetFullPath(profileData.OutputDirectory);
@@ -564,7 +563,7 @@ namespace MinimalSqlExport
                     outputPath = Path.Combine(outputDir, fileName);
                 }
 
-                // Write the output
+                
                 File.WriteAllText(outputPath, output.ToString());
                 AnsiConsole.MarkupLine($"[green]Output written to:[/] [blue]{outputPath}[/]");
                 Log.Information("Output successfully written to: {Path}", outputPath);
@@ -576,8 +575,7 @@ namespace MinimalSqlExport
                 throw;
             }
         }
-
-        // Helper methods for formatting different output types
+        
         private static void FormatAsJson(List<Dictionary<string, object?>> rows, StringBuilder output, JsonSettings? settings)
         {
             if (rows.Count > 0 && rows[0].Count == 1)
@@ -585,15 +583,15 @@ namespace MinimalSqlExport
                 var columnName = rows[0].Keys.First();
                 var firstValue = rows[0][columnName]?.ToString() ?? "";
                 
-                // Simple check if it looks like JSON
+                
                 if (firstValue.TrimStart().StartsWith("[") || firstValue.TrimStart().StartsWith("{"))
                 {
                     try
                     {
-                        // Concatenate all fragments
+                        
                         var fullJson = string.Concat(rows.Select(r => r[columnName]?.ToString() ?? ""));
                         
-                        // Try to parse and pretty-print
+                        
                         var parsedJson = JsonDocument.Parse(fullJson);
                         output.AppendLine(JsonSerializer.Serialize(parsedJson.RootElement, 
                             new JsonSerializerOptions { WriteIndented = true }));
@@ -602,31 +600,31 @@ namespace MinimalSqlExport
                     {
                         Log.Warning(ex, "Failed to parse JSON from column data: {Message}", ex.Message);
                         
-                        // Fall back to standard serialization
+                        
                         output.AppendLine(JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true }));
                     }
                 }
                 else
                 {
-                    // Standard serialization for normal data
+                    
                     output.AppendLine(JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true }));
                 }
             }
             else
             {
-                // Standard serialization for normal data
+                
                 output.AppendLine(JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true }));
             }
         }
 
         private static void FormatAsXml(List<Dictionary<string, object?>> rows, StringBuilder output, XmlSettings? settings)
         {
-            // XML header is determined only by profile settings
+            
             if (settings?.AppendHeader == true)
                 output.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
                 
             string rootNode = settings?.RootNode ?? "Root";
-            string rowNode = settings?.RowNode ?? "Row";  // Get row node name from settings
+            string rowNode = settings?.RowNode ?? "Row";  
             
             output.AppendLine($"<{rootNode}>");
             
@@ -659,7 +657,7 @@ namespace MinimalSqlExport
                 var serializerBuilder = new SerializerBuilder()
                     .WithNamingConvention(CamelCaseNamingConvention.Instance);
                     
-                // Apply custom settings if provided
+                
                 if (settings != null)
                 {
                     if (settings.IndentationLevel > 0)
@@ -693,7 +691,7 @@ namespace MinimalSqlExport
                 
                 foreach (var row in rows)
                 {
-                    // Escape values if they contain the separator
+                    
                     var escapedValues = row.Values
                         .Select(v => FormatCsvValue(v?.ToString() ?? string.Empty, sep))
                         .ToList();
@@ -715,9 +713,9 @@ namespace MinimalSqlExport
             
             if (needsQuoting)
             {
-                // Replace any double quotes with two double quotes
+                
                 value = value.Replace("\"", "\"\"");
-                // Wrap in quotes
+                
                 return $"\"{value}\"";
             }
             
@@ -726,7 +724,7 @@ namespace MinimalSqlExport
 
         static string MaskConnectionString(string connectionString)
         {
-            // Simple masking to hide sensitive information
+            
             if (string.IsNullOrEmpty(connectionString))
                 return string.Empty;
                 
@@ -781,35 +779,37 @@ namespace MinimalSqlExport
         {
         }
 
-        private static void FormatWithAutoDetection(List<Dictionary<string, object?>> rows, StringBuilder output, OutputSettings? outputProps)
+        private static string FormatWithAutoDetection(List<Dictionary<string, object?>> rows, StringBuilder output, OutputSettings? outputProps)
         {
-            // Quick check if we have any data
+            string detectedFormat = "CSV"; 
+            
+            
             if (rows.Count == 0)
             {
                 Log.Warning("No rows returned from query");
-                return;
+                return detectedFormat;
             }
 
-            // Check if this looks like a SQL Server FOR XML or FOR JSON result set
-            // These usually come as a single column result set with XML or JSON data
+            
+            
             if (rows.Count > 0 && rows[0].Count == 1)
             {
                 var columnName = rows[0].Keys.First();
                 var firstValue = rows[0][columnName]?.ToString() ?? "";
                 
-                // Handle FOR XML results
+                
                 if (firstValue.TrimStart().StartsWith("<"))
                 {
                     try
                     {
-                        // Concatenate all fragments
+                        
                         var fullXml = string.Concat(rows.Select(r => r[columnName]?.ToString() ?? ""));
                         
-                        // If it looks like XML and parse succeeds, directly output the XML
+                        
                         var doc = new XmlDocument();
                         doc.LoadXml(fullXml);
                         
-                        // Pretty print if it's valid XML
+                        
                         using var stringWriter = new StringWriter();
                         using var xmlTextWriter = new XmlTextWriter(stringWriter)
                         {
@@ -820,24 +820,25 @@ namespace MinimalSqlExport
                         
                         output.AppendLine(stringWriter.ToString());
                         Log.Information("Detected and formatted SQL Server FOR XML result");
-                        return;
+                        detectedFormat = "XML";
+                        return detectedFormat;
                     }
                     catch (XmlException ex)
                     {
                         Log.Warning(ex, "Data looks like XML but failed to parse: {Message}", ex.Message);
-                        // Fall through to default handling
+                        
                     }
                 }
                 
-                // Handle FOR JSON results
+                
                 else if (firstValue.TrimStart().StartsWith("[") || firstValue.TrimStart().StartsWith("{"))
                 {
                     try
                     {
-                        // Concatenate all fragments
+                        
                         var fullJson = string.Concat(rows.Select(r => r[columnName]?.ToString() ?? ""));
                         
-                        // If it looks like JSON and parse succeeds, pretty-print the JSON
+                        
                         var parsedJson = JsonDocument.Parse(fullJson);
                         
                         var jsonOptions = new JsonSerializerOptions 
@@ -847,21 +848,22 @@ namespace MinimalSqlExport
                         
                         output.AppendLine(JsonSerializer.Serialize(parsedJson.RootElement, jsonOptions));
                         Log.Information("Detected and formatted SQL Server FOR JSON result");
-                        return;
+                        detectedFormat = "JSON";
+                        return detectedFormat;
                     }
                     catch (JsonException ex)
                     {
                         Log.Warning(ex, "Data looks like JSON but failed to parse: {Message}", ex.Message);
-                        // Fall through to default handling
+                        
                     }
                 }
             }
             
-            // If we couldn't detect a specific format or parsing failed, default to CSV
+            
             Log.Information("No specific format detected, defaulting to CSV format");
             FormatAsDelimited(rows, output, "CSV", outputProps?.CSV);
+            return detectedFormat;
         }
-
         public class Profile
         {
             public string Name { get; set; } = string.Empty;
@@ -870,7 +872,7 @@ namespace MinimalSqlExport
             public string Format { get; set; } = string.Empty;
             public string OutputDirectory { get; set; } = string.Empty;
             public OutputSettings? OutputProperties { get; set; }
-            public int? CommandTimeout { get; set; } = 30; // Default 30 seconds
+            public int? CommandTimeout { get; set; } = 30; 
         }
 
         public class OutputSettings
@@ -878,10 +880,10 @@ namespace MinimalSqlExport
             public CsvSettings? CSV { get; set; }
             public XmlSettings? XML { get; set; }
             public JsonSettings? JSON { get; set; }
-            public YamlSettings? YAML { get; set; } // New property
+            public YamlSettings? YAML { get; set; } 
         }
 
-        // New class for YAML settings
+        
         public class YamlSettings
         {
             public bool IncludeHeader { get; set; } = true;
@@ -901,11 +903,11 @@ namespace MinimalSqlExport
         {
             public bool AppendHeader { get; set; } = true;
             public string RootNode { get; set; } = "Root";
-            public string RowNode { get; set; } = "Row";  // New property
+            public string RowNode { get; set; } = "Row";  
         }
         public class JsonSettings
         {
-            public bool WriteIndented { get; set; } = true; // Add WriteIndented property
+            public bool WriteIndented { get; set; } = true; 
         }
     }
 }
