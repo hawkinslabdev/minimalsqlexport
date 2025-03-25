@@ -1,0 +1,8 @@
+{
+    "Name": "generic-export-json",
+    "ConnectionString": "Server=VM2K22;Database=600;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;",
+    "Query": "SELECT TOP 10 * FROM dbo.cicmpy FOR JSON AUTO, ROOT('customers')",
+    "Format": "AUTO",
+    "OutputDirectory": ".\\output\\generic",
+    "CommandTimeout": 60
+  }

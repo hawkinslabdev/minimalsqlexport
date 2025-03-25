@@ -1,0 +1,8 @@
+{
+    "Name": "generic-export-xml",
+    "ConnectionString": "Server=VM2K22;Database=600;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;",
+    "Query": "SELECT TOP 10 * FROM dbo.cicmpy FOR XML PATH('Customer'), ROOT('Customers')",
+    "Format": "AUTO",
+    "OutputDirectory": ".\\output\\generic",
+    "CommandTimeout": 60
+  }

@@ -1,0 +1,151 @@
+- cmp_code: '               60096'
+  cmp_wwn: 9a1af7a2-8892-417d-81f1-16d003b2d04b
+  cmp_name: SNS Bank
+- cmp_code: '               60086'
+  cmp_wwn: 47c72287-b7ed-4907-8563-87f8b2f63d5b
+  cmp_name: Contantdebiteur
+- cmp_code: '               60089'
+  cmp_wwn: e11c4af3-7fa9-4a61-9152-4a8b7743f911
+  cmp_name: Restaurant Enkhuizen
+- cmp_code: '               60090'
+  cmp_wwn: 001b76e8-3ec0-4867-b3a9-7cf6e4a38140
+  cmp_name: Lunchroom de Orka
+- cmp_code: '               60091'
+  cmp_wwn: b112e2d6-41cc-48b5-84f2-0dbde4da86ae
+  cmp_name: Kaffee und Kuchen
+- cmp_code: '               60092'
+  cmp_wwn: 4c63823a-814a-4e4f-a6ce-1b7b16ef490f
+  cmp_name: Pizzeria Vesuvius
+- cmp_code: '               60093'
+  cmp_wwn: 48c6c8df-5bd0-4c76-b713-8b4bf05c2d77
+  cmp_name: Cafe Hout
+- cmp_code: '               60094'
+  cmp_wwn: 1b51fabd-49e4-4e28-8ea6-cd7c4207e406
+  cmp_name: Mevr. Vlemmiks
+- cmp_code: '               60100'
+  cmp_wwn: 6aa6f8c9-154a-4481-8a2e-58aa74ab468f
+  cmp_name: Grand cafe de Zeven Heuvels
+- cmp_code: '               60101'
+  cmp_wwn: 82a78630-0aef-4d13-bb56-684e7929fc61
+  cmp_name: Chinees restaurant 'De groene draak'
+- cmp_code: '               60102'
+  cmp_wwn: e98b70e4-ecf2-451b-a6d2-44584b9aa71e
+  cmp_name: Cafe de Lantaarn
+- cmp_code: '               60103'
+  cmp_wwn: 9f5f3e9f-b882-4031-a365-810e7bb1682c
+  cmp_name: Wok around de clock
+- cmp_code: '               60104'
+  cmp_wwn: 270021a1-b262-4c98-a012-eafa7b78f6db
+  cmp_name: Het Witte paard
+- cmp_code: '               60105'
+  cmp_wwn: bba770ca-609c-484b-9970-8d28b08c7f8c
+  cmp_name: Brasserie Pigalle
+- cmp_code: '               60127'
+  cmp_wwn: b415b5a6-91a1-417d-a78f-5cb75c0aa799
+  cmp_name: DSA Limburg
+- cmp_code: '               60128'
+  cmp_wwn: 7b632b2f-c613-4481-9e21-fdbf115bd00b
+  cmp_name: Chicken Corner (region zuid)
+- cmp_code: '               60129'
+  cmp_wwn: da01e03c-adec-4743-9a01-ca73a421d9b4
+  cmp_name: Van der Vogel hotels
+- cmp_code: '               60130'
+  cmp_wwn: 14cc9123-6e12-4128-aaec-7ed095fb01a0
+  cmp_name: Jane Doe
+- cmp_code: '              000000'
+  cmp_wwn: f428b730-4735-4a54-a8b5-5ba2358f2315
+  cmp_name: Unknown debtor
+- cmp_code: '                1019'
+  cmp_wwn: 908ab2ee-e956-433e-a1a5-0b17b5e3f765
+  cmp_name: Cayleigh Prior
+- cmp_code: '                1023'
+  cmp_wwn: 9ffe01fa-6a8b-4df8-8019-434d943ee4fb
+  cmp_name: Eline Weerts
+- cmp_code: '              991000'
+  cmp_wwn: 51784d66-f088-46d5-abb8-32eb74f7646d
+  cmp_name: Nico Cremers
+- cmp_code: '              991001'
+  cmp_wwn: 47fdd07d-7a31-4013-a139-761de954203b
+  cmp_name: Richard Peters
+- cmp_code: '              991002'
+  cmp_wwn: 7071a458-92ac-4263-91ad-fb4b7c86a754
+  cmp_name: Hanneke Janssen
+- cmp_code: '              991003'
+  cmp_wwn: 1186eee2-951a-44d0-9332-accbe7cf566d
+  cmp_name: Marc Sanders
+- cmp_code: '              991004'
+  cmp_wwn: 82e41f76-70fd-40a8-88dc-7b304dba6670
+  cmp_name: Bas de Waal
+- cmp_code: '              991005'
+  cmp_wwn: 6e923a56-6229-4361-ac97-a8e10b73df6c
+  cmp_name: Nicole Looman
+- cmp_code: '              991006'
+  cmp_wwn: 54de1ced-c4f6-447b-a473-1e58fbde5290
+  cmp_name: Sanne Klein - van Elburg
+- cmp_code: '              991007'
+  cmp_wwn: 8564efba-f86f-4a3b-a74c-a94414e9d794
+  cmp_name: Olaf Smulders
+- cmp_code: '              991008'
+  cmp_wwn: c2dce846-7090-4b5a-87d2-9d069d88d398
+  cmp_name: Suzanne de Vooght
+- cmp_code: '              991009'
+  cmp_wwn: 2e0123c0-ed9b-406a-a280-02a110008128
+  cmp_name: Hakim Atilla
+- cmp_code: '              991010'
+  cmp_wwn: 3cfd9fc7-db47-4b08-9a8e-b05f107b9bd2
+  cmp_name: Niels Vermeer
+- cmp_code: '              991011'
+  cmp_wwn: 5339c9ef-a171-4876-a009-ac890cdf2ec0
+  cmp_name: Karen Swart
+- cmp_code: '              991012'
+  cmp_wwn: 8dcc4ae0-1e92-48a1-86ad-dd3784229e1f
+  cmp_name: Erik van Mierlo
+- cmp_code: '              991013'
+  cmp_wwn: cbb45eff-5b66-4ed4-999c-755eadcb4737
+  cmp_name: Antoine de Groot
+- cmp_code: '              991014'
+  cmp_wwn: d41943b5-acea-411d-9418-1cbdf4f3e9e3
+  cmp_name: Taco Mertens
+- cmp_code: '              991015'
+  cmp_wwn: ee2f1181-3d0b-4fe4-a1a2-c1bd29e0e4b2
+  cmp_name: Wendy Bakker
+- cmp_code: '              991016'
+  cmp_wwn: b74c8ddd-3f2b-4a5d-b287-647e10f13a7d
+  cmp_name: Anneke Diepstraeten
+- cmp_code: '              991017'
+  cmp_wwn: 9ae8494d-ca6c-4b7e-aed7-45ac7b5e6471
+  cmp_name: Aaron de Wit
+- cmp_code: '              991022'
+  cmp_wwn: fa2a3891-6437-453a-8a7b-2f6ffdb0a158
+  cmp_name: Wing Chan
+- cmp_code: '               60085'
+  cmp_wwn: c5376ab8-bbec-4777-a76a-354816760172
+  cmp_name: Belastingdienst CBA Apeldoorn
+- cmp_code: '               60087'
+  cmp_wwn: b8e4e7f8-405b-4918-9284-d43b033db9be
+  cmp_name: TNT
+- cmp_code: '               60088'
+  cmp_wwn: cd34a865-90cc-48ab-b653-c405a047e059
+  cmp_name: DHL
+- cmp_code: '               60097'
+  cmp_wwn: b9b411ec-cbd1-45be-81bd-3ce66eec9fd5
+  cmp_name: Machinefabriek Meier
+- cmp_code: '               60098'
+  cmp_wwn: ed400c67-eb4c-4500-8ea7-74b4b463a3bd
+  cmp_name: Dijk leasing
+- cmp_code: '               60099'
+  cmp_wwn: 3b5e5e2e-7507-4e65-aac9-a6bdd1049fcb
+  cmp_name: ABN AMRO
+- cmp_code: '               60106'
+  cmp_wwn: df0d6c41-26c7-4adf-ad28-c3158a3f6f8a
+  cmp_name: Rabobank
+- cmp_code: '               60107'
+  cmp_wwn: a9f13865-849c-4b89-a6cd-d22b46749cab
+  cmp_name: ING Bank
+- cmp_code: '               60108'
+  cmp_wwn: 0bb25410-abe4-4057-a070-18f9d47dbb87
+  cmp_name: Kassa crediteur
+- cmp_code: '               60110'
+  cmp_wwn: bd5b1a09-e3df-4525-a223-1bc16453702b
+  cmp_name: MacBean Coffeeworld
+
