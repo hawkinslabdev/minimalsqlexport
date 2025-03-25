@@ -1,6 +1,8 @@
 # MinimalSqlExport
 
-A lightweight, profile-based SQL export utility that makes it easy to export SQL Server query results in multiple formats.
+A lightweight, profile-based SQL export utility that makes it easy to export SQL Server query results in multiple formats. Easy for people whom use SQL Server on Windows.
+
+![alt text](https://github.com/hawkinslabdev/minimalsqlexport/raw/main/Source/example.png "Example")
 
 ## Quick Start Guide
 
