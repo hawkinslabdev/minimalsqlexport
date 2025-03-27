@@ -12,6 +12,7 @@ using Serilog;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using Spectre.Console;
+using Dapper;
 
 namespace MinimalSqlExport
 {
@@ -107,7 +108,7 @@ namespace MinimalSqlExport
             var loggingSettings = LoadLoggingSettings();
             var loggerConfig = new LoggerConfiguration();
             
-            // Set minimum level based on settings
+            
             switch (loggingSettings.LogLevel.ToLowerInvariant())
             {
                 case "debug":
@@ -129,13 +130,13 @@ namespace MinimalSqlExport
                     break;
             }
             
-            // Configure sinks
+            
             Directory.CreateDirectory("log");
             loggerConfig = loggerConfig
                 .WriteTo.Console()
                 .WriteTo.File("log/log-.log", rollingInterval: RollingInterval.Day);
             
-            // Create and assign the logger
+            
             Log.Logger = loggerConfig.CreateLogger();
             
             if (loggingSettings.LogLevel.ToLowerInvariant() != "information") {
@@ -149,7 +150,7 @@ namespace MinimalSqlExport
             
             if (!File.Exists(settingsFile))
             {
-                // Create default settings
+                
                 var defaultSettings = new LoggingSettings();
                 string jsonString = JsonSerializer.Serialize(defaultSettings, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(settingsFile, jsonString);
@@ -164,7 +165,7 @@ namespace MinimalSqlExport
             }
             catch (Exception)
             {
-                // If there's an error loading the settings, use defaults
+                
                 return new LoggingSettings();
             }
         }
@@ -634,37 +635,39 @@ namespace MinimalSqlExport
                 throw;
             }
 
-            try
+           try
             {
-                using var command = new SqlCommand(query, connection);
-                
-                command.CommandTimeout = profileData.CommandTimeout ?? 30; 
+                DynamicParameters parameters = new DynamicParameters();
+                if (profileData.Parameters != null && profileData.Parameters.Count > 0)
+                {
+                    parameters = new DynamicParameters();
+                    foreach (var param in profileData.Parameters)
+                    {
+                        parameters.Add(param.Name, param.Value);
+                    }
+                }
                 
                 AnsiConsole.Status()
                     .Start("Executing query...", ctx => 
                     {
                         try
                         {
-                            using var reader = command.ExecuteReader();
+                            ctx.Status("Running query with Dapper...");
+                            
+                            
+                            var results = connection.Query(query, parameters, commandTimeout: profileData.CommandTimeout ?? 30);
+                            
                             ctx.Status("Processing results...");
                             
-                            while (reader.Read())
+                            
+                            foreach (var row in results)
                             {
-                                var row = new Dictionary<string, object?>();
-                                for (int i = 0; i < reader.FieldCount; i++)
+                                var rowDict = new Dictionary<string, object?>();
+                                foreach (var prop in (IDictionary<string, object>)row)
                                 {
-                                    try
-                                    {
-                                        row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Log.Warning(ex, "Error reading column {Column}: {Message}", 
-                                            reader.GetName(i), ex.Message);
-                                        row[reader.GetName(i)] = null;
-                                    }
+                                    rowDict[prop.Key] = prop.Value;
                                 }
-                                rows.Add(row);
+                                rows.Add(rowDict);
                             }
                             
                             ctx.Status($"Retrieved {rows.Count} rows");
@@ -685,7 +688,6 @@ namespace MinimalSqlExport
                 AnsiConsole.MarkupLine("[red]Failed to execute query.[/]");
                 throw;
             }
-
             
             try
             {
@@ -1188,19 +1190,35 @@ namespace MinimalSqlExport
             
             return sb.ToString();
         }
+        static bool ValidateQuery(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return true;
+                
+            bool hasMultipleStatements = query.Contains(';') && 
+                System.Text.RegularExpressions.Regex.IsMatch(query, ";\\s*\\w+");
+            
+            return !hasMultipleStatements;
+        }
 
         public class Profile
         {
             public string Name { get; set; } = string.Empty;
             public string ConnectionString { get; set; } = string.Empty;
             public string Query { get; set; } = string.Empty;
+            public List<Parameter>? Parameters { get; set; }
             public string Format { get; set; } = string.Empty;
             public string OutputDirectory { get; set; } = string.Empty;
             public OutputSettings? OutputProperties { get; set; }
             public int? CommandTimeout { get; set; } = 60; 
             public bool EnableMailNotification { get; set; } = false;
         }
-
+        public class Parameter
+        {
+            public string Name { get; set; } = string.Empty;
+            public string? Value { get; set; }
+            public string Type { get; set; } = "NVarChar";
+        }
         public class OutputSettings
         {
             public CsvSettings? CSV { get; set; }

@@ -1,0 +1,24 @@
+{
+    "Name": "example-csv-filtered",
+    "ConnectionString": "Server=VM2K22;Database=600;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;",
+    "Query": "SELECT cmp_code, cmp_wwn, cmp_name FROM dbo.cicmpy WHERE cmp_name LIKE @SearchName",
+    "Parameters": [
+        {
+        "Name": "@SearchName",
+        "Value": "%Hout%",
+        "Type": "NVARCHAR"
+        }
+    ],
+    "Format": "CSV",
+    "OutputDirectory": ".\\output\\csv",
+    "OutputProperties": {
+      "CSV": {
+        "Header": true,
+        "Delimiter": ",",
+        "Separator": ",",
+        "Decimal": "."
+      }
+    },
+    "EnableMailNotification": true
+  }
+  
