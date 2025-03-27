@@ -1,6 +1,6 @@
 # Minimal SQL Export (Tool)
 
-A lightweight, profile-based SQL export utility that makes it easy to export SQL Server query results in multiple formats. Easy for people whom use SQL Server on Windows.
+A lightweight, profile-based SQL export utility for SQL Server data in multiple formats.
 
 ![alt text](https://github.com/hawkinslabdev/minimalsqlexport/raw/main/Source/example.png "Example")
 
@@ -8,9 +8,29 @@ A lightweight, profile-based SQL export utility that makes it easy to export SQL
 
 ### Installation
 
-1. Download the latest release from the [Releases](https://github.com/yourusername/minimalsqlexport/releases) page
-2. Extract the ZIP file to a location of your choice (e.g., `C:\Tools\MinimalSqlExport`)
-3. The folder now contains a self-contained executable with no additional dependencies
+1. Download and extract the latest release
+2. Run `MinimalSqlExport` to create default profiles
+3. Customize profiles in the `profiles` folder
+
+## Key Features
+
+- **Export formats**: CSV, JSON, XML, TAB, YAML, or AUTO detection
+- **Parameterized queries**: SQL injection protection via Dapper
+- **Profile-based**: Define connections, queries, and formats in JSON files
+- **Smart detection**: Auto-format SQL Server's `FOR XML` and `FOR JSON` output
+- **Secure mode**: Optional validation of potentially dangerous SQL (`-s` flag)
+- **Error notifications**: Email alerts on failures
+- **Detailed logging**: Comprehensive error handling
+
+## Command Line Usage
+
+MinimalSqlExport -p profile_name
+MinimalSqlExport -l                          # List profiles
+MinimalSqlExport -p profile -q "SQL QUERY"   # Override query
+MinimalSqlExport -p profile -f JSON          # Change format
+MinimalSqlExport -p profile -o output.csv    # Custom output file
+MinimalSqlExport -p profile -s               # Run in secure mode
+MinimalSqlExport -p profile -n               # Enable notifications
 
 ### First Run
 
@@ -42,16 +62,36 @@ Example profile (mydb.json):
 {
   "Name": "mydb",
   "ConnectionString": "Server=MyServer;Database=MyDB;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;",
-  "Query": "SELECT TOP 100 * FROM dbo.customers",
+  "Query": "SELECT TOP 100 * FROM dbo.customers WHERE region = @Region",
   "Format": "CSV",
   "OutputDirectory": "C:\\Exports\\MyDB",
   "CommandTimeout": 30,
+  "Parameters": [
+    {
+      "Name": "@Region",
+      "Value": "East",
+      "Type": "NVarChar"
+    }
+  ],
   "OutputProperties": {
     "CSV": {
       "Header": true,
       "Delimiter": ",",
       "Separator": ",",
       "Decimal": "."
+    },
+    "XML": {
+      "AppendHeader": true,
+      "RootNode": "Customers",
+      "RowNode": "Customer"
+    },
+    "JSON": {
+      "WriteIndented": true
+    },
+    "YAML": {
+      "IncludeHeader": true,
+      "IndentationLevel": 2,
+      "EmitDefaults": false
     }
   },
   "EnableMailNotification": true

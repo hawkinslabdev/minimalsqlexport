@@ -1,7 +1,7 @@
 {
-    "Name": "generic-export-json",
+    "Name": "example-generic-json",
     "ConnectionString": "Server=VM2K22;Database=600;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;",
-    "Query": "SELECT TOP 10 * FROM dbo.cicmpy FOR JSON AUTO, ROOT('customers')",
+    "Query": "SELECT TOP 10 cmp_code As AccountCode, cmp_wwn As AccountID, TRIM(cmp_name) As AccountName, (SELECT cicntp.cnt_id As ContactID, cicntp.FullName FROM cicntp WHERE cicntp.cmp_wwn = cicmpy.cmp_wwn FOR JSON AUTO) As Contacts FROM dbo.cicmpy FOR JSON AUTO",
     "Format": "AUTO",
     "OutputDirectory": ".\\output\\generic",
     "CommandTimeout": 60,

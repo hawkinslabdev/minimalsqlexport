@@ -1,7 +1,7 @@
 {
     "Name": "example-json",
     "ConnectionString": "Server=VM2K22;Database=600;Integrated Security=True;Encrypt=False;TrustServerCertificate=True;",
-    "Query": "SELECT cmp_code As AccountCode, cmp_wwn As AccountID, TRIM(cmp_name) As AccountName, (SELECT cicntp.cnt_id As ContactID, cicntp.FullName FROM cicntp WHERE cicntp.cmp_wwn = cicmpy.cmp_wwn FOR JSON AUTO) As Contacts FROM dbo.cicmpy FOR JSON AUTO",
+    "Query": "SELECT cmp_code As AccountCode, cmp_wwn As AccountID, TRIM(cmp_name) As AccountName FROM dbo.cicmpy",
     "Format": "JSON",
     "OutputDirectory": ".\\output\\json",
     "OutputProperties": {
