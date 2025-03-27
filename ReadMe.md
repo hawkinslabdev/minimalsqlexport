@@ -1,4 +1,4 @@
-# MinimalSqlExport
+# Minimal SQL Export (Tool)
 
 A lightweight, profile-based SQL export utility that makes it easy to export SQL Server query results in multiple formats. Easy for people whom use SQL Server on Windows.
 
@@ -53,7 +53,8 @@ Example profile (mydb.json):
       "Separator": ",",
       "Decimal": "."
     }
-  }
+  },
+  "EnableMailNotification": true
 }
 ```
 
@@ -153,6 +154,7 @@ To receive email notifications when exports complete:
 - Command-line and interactive modes
 - Customizable output settings per profile
 - Comprehensive error handling with detailed logging
+- Simple, but effective error notifications (only supports SMTP)
 
 ## Profiles
 
@@ -169,7 +171,8 @@ Profiles are JSON files stored in the `profiles` folder. Each profile defines co
   "Query": "SELECT * FROM dbo.customers FOR XML PATH('Customer'), ROOT('Customers')",
   "Format": "AUTO",
   "OutputDirectory": ".\\output\\generic",
-  "CommandTimeout": 60
+  "CommandTimeout": 60,
+  "EnableMailNotification": true
 }
 ```
 
