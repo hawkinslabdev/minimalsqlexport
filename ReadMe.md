@@ -24,13 +24,13 @@ A lightweight, profile-based SQL export utility for SQL Server data in multiple 
 
 ## Command Line Usage
 
-MinimalSqlExport -p profile_name
-MinimalSqlExport -l                          # List profiles
-MinimalSqlExport -p profile -q "SQL QUERY"   # Override query
-MinimalSqlExport -p profile -f JSON          # Change format
-MinimalSqlExport -p profile -o output.csv    # Custom output file
-MinimalSqlExport -p profile -s               # Run in secure mode
-MinimalSqlExport -p profile -n               # Enable notifications
+- MinimalSqlExport -p profile_name
+- MinimalSqlExport -l                          # List profiles
+- MinimalSqlExport -p profile -q "SQL QUERY"   # Override query
+- MinimalSqlExport -p profile -f JSON          # Change format
+- MinimalSqlExport -p profile -o output.csv    # Custom output file
+- MinimalSqlExport -p profile -s               # Run in secure mode
+- MinimalSqlExport -p profile -n               # Enable notifications
 
 ### First Run
 
