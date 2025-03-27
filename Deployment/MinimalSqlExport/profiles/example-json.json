@@ -8,6 +8,7 @@
       "JSON": {
         "WriteIndented": true
       }
-    }
+    },
+    "EnableMailNotification": true
   }
   

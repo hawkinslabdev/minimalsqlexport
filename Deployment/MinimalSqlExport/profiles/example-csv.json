@@ -11,5 +11,6 @@
       "Separator": ",",
       "Decimal": "."
     }
-  }
+  },
+  "EnableMailNotification": true
 }

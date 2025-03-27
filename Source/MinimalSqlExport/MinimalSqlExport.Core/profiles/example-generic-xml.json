@@ -4,5 +4,6 @@
     "Query": "SELECT TOP 10 * FROM dbo.cicmpy FOR XML PATH('Customer'), ROOT('Customers')",
     "Format": "AUTO",
     "OutputDirectory": ".\\output\\generic",
-    "CommandTimeout": 60
+    "CommandTimeout": 60,
+    "EnableMailNotification": true
   }

@@ -1,0 +1,11 @@
+{
+  "SmtpServer": "localhost",
+  "SmtpPort": 25,
+  "UseSsl": false,
+  "From": "admin@localhost.com",
+  "To": "system@localhost.com",
+  "Subject": "SQL Export Notification",
+  "Username": null,
+  "Password": null,
+  "NotifyOnlyErrors": true
+}

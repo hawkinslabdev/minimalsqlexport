@@ -11,5 +11,6 @@
         "IndentationLevel": 2,
         "EmitDefaults": false
       }
-    }
+    },
+    "EnableMailNotification": true
   }

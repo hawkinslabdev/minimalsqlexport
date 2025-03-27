@@ -35,15 +35,11 @@ namespace MinimalSqlExport
 
         static int Main(string[] args)
         {
-            Directory.CreateDirectory("log");
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .WriteTo.File("log/log-.log", rollingInterval: RollingInterval.Day)
-                .CreateLogger();
-
             try
             {
+                ConfigureLogging();
                 LoadOrCreateProfiles();
+                LoadOrCreateMailConfig(); 
 
                 if (args.Length == 0)
                 {
@@ -74,22 +70,26 @@ namespace MinimalSqlExport
                     new Option<bool>(
                         aliases: new[] { "--list", "-l" },
                         description: "List available profiles",
+                        getDefaultValue: () => false),
+
+                    new Option<bool>(
+                        aliases: new[] { "--notify", "-n" },
+                        description: "Enable email notifications for errors",
                         getDefaultValue: () => false)
                 };
 
                 rootCommand.Description = "Run SQL queries per profile and export result in various formats";
 
-                rootCommand.Handler = CommandHandler.Create<string, string, string, FileInfo, bool>(
-                    (profile, query, format, output, list) => {
+                rootCommand.Handler = CommandHandler.Create<string, string, string, FileInfo, bool, bool>(
+                    (profile, query, format, output, list, notify) => {
                         if (list)
                         {
                             DisplayProfiles();
                             return 0;
                         }
                         
-                        return ExecuteQueryWithStatus(profile, query, format, output);
+                        return ExecuteQueryWithStatus(profile, query, format, output, notify);
                     });
-
                 return rootCommand.Invoke(args);
             }
             catch (Exception ex)
@@ -102,7 +102,72 @@ namespace MinimalSqlExport
                 Log.CloseAndFlush();
             }
         }
+        private static void ConfigureLogging()
+        {
+            var loggingSettings = LoadLoggingSettings();
+            var loggerConfig = new LoggerConfiguration();
+            
+            // Set minimum level based on settings
+            switch (loggingSettings.LogLevel.ToLowerInvariant())
+            {
+                case "debug":
+                    loggerConfig = loggerConfig.MinimumLevel.Debug();
+                    break;
+                case "information":
+                case "info":
+                    loggerConfig = loggerConfig.MinimumLevel.Information();
+                    break;
+                case "warning":
+                case "warn":
+                    loggerConfig = loggerConfig.MinimumLevel.Warning();
+                    break;
+                case "error":
+                    loggerConfig = loggerConfig.MinimumLevel.Error();
+                    break;
+                default:
+                    loggerConfig = loggerConfig.MinimumLevel.Information();
+                    break;
+            }
+            
+            // Configure sinks
+            Directory.CreateDirectory("log");
+            loggerConfig = loggerConfig
+                .WriteTo.Console()
+                .WriteTo.File("log/log-.log", rollingInterval: RollingInterval.Day);
+            
+            // Create and assign the logger
+            Log.Logger = loggerConfig.CreateLogger();
+            
+            if (loggingSettings.LogLevel.ToLowerInvariant() != "information") {
+                Log.Information("Application starting with non-default log level: {LogLevel}", loggingSettings.LogLevel);
+            }
+        }
 
+        private static LoggingSettings LoadLoggingSettings()
+        {
+            const string settingsFile = "logsettings.json";
+            
+            if (!File.Exists(settingsFile))
+            {
+                // Create default settings
+                var defaultSettings = new LoggingSettings();
+                string jsonString = JsonSerializer.Serialize(defaultSettings, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(settingsFile, jsonString);
+                return defaultSettings;
+            }
+            
+            try
+            {
+                string json = File.ReadAllText(settingsFile);
+                var settings = JsonSerializer.Deserialize<LoggingSettings>(json);
+                return settings ?? new LoggingSettings();
+            }
+            catch (Exception)
+            {
+                // If there's an error loading the settings, use defaults
+                return new LoggingSettings();
+            }
+        }
         static void LoadOrCreateProfiles()
         {
             if (!Directory.Exists(ProfilesFolder))
@@ -163,7 +228,6 @@ namespace MinimalSqlExport
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[yellow]Available profiles:[/]");
             
-            
             var sortedProfiles = Profiles.Keys.OrderBy(k => k).ToList();
             
             if (sortedProfiles.Count == 0)
@@ -171,7 +235,6 @@ namespace MinimalSqlExport
                 AnsiConsole.MarkupLine("[red]No profiles found. Please create a profile first.[/]");
                 return;
             }
-            
             
             for (int i = 0; i < sortedProfiles.Count; i++)
             {
@@ -185,21 +248,20 @@ namespace MinimalSqlExport
             
             if (int.TryParse(input, out int profileIndex) && profileIndex >= 1 && profileIndex <= sortedProfiles.Count)
             {
-                
                 profile = sortedProfiles[profileIndex - 1];
             }
             else
             {
-                
                 profile = input;
             }
             
             if (!Profiles.TryGetValue(profile, out var profileData))
             {
-                AnsiConsole.MarkupLine($"[red]Profile '{profile}' not found.[/]");
+                string errorMessage = $"Profile '{profile}' not found.";
+                AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
+                Log.Error("Profile '{Profile}' not found", profile);
                 return;
             }
-            
             
             AnsiConsole.MarkupLine($"[green]Using profile:[/] [blue]{profile}[/]");
 
@@ -223,14 +285,46 @@ namespace MinimalSqlExport
                 customOutputPath = Prompt("Enter output file path:");
             }
 
+            Console.Write("Send notifications on error? (Y/N) [N]: ");
+            var sendNotificationsInput = Console.ReadLine()?.Trim() ?? "";
+            var sendNotifications = sendNotificationsInput.Equals("Y", StringComparison.OrdinalIgnoreCase);
+
             try
             {
-                ExecuteQuery(profile, query, format, customOutputPath);
+                string? outputPath = null;
+                ExecuteQuery(profile, query, format, customOutputPath, out outputPath);
+            }
+            catch (SqlException ex)
+            {
+                string errorMessage = $"SQL Error: {ex.Message}\nError Number: {ex.Number}";
+                AnsiConsole.MarkupLine($"[red]Operation failed: {ex.Message}[/]");
+                AnsiConsole.MarkupLine($"[red]Error Number: {ex.Number}[/]");
+                Log.Error(ex, "SQL Error executing query: {Message}", ex.Message);
+                
+                
+                if (sendNotifications && profileData.EnableMailNotification && MailSettings != null)
+                {
+                    SendErrorNotification(profile, errorMessage);
+                    AnsiConsole.MarkupLine("[yellow]Error notification sent.[/]");
+                }
             }
             catch (Exception ex)
             {
-                AnsiConsole.MarkupLine($"[red]Operation failed: {ex.Message}[/]");
+                string errorMessage = $"Operation failed: {ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    errorMessage += $"\nDetails: {ex.InnerException.Message}";
+                }
+                    
+                AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                 Log.Error(ex, "Operation failed in interactive mode");
+                
+                
+                if (sendNotifications && profileData.EnableMailNotification && MailSettings != null)
+                {
+                    SendErrorNotification(profile, errorMessage);
+                    AnsiConsole.MarkupLine("[yellow]Error notification sent.[/]");
+                }
             }
         }
 
@@ -258,49 +352,83 @@ namespace MinimalSqlExport
                 AnsiConsole.MarkupLine($"  Connection: {MaskConnectionString(profile.ConnectionString)}");
                 AnsiConsole.MarkupLine($"  Format: {profile.Format}");
                 AnsiConsole.MarkupLine($"  Output Directory: {profile.OutputDirectory}");
-                AnsiConsole.MarkupLine($"  Command Timeout: {profile.CommandTimeout ?? 30} seconds");
+                AnsiConsole.MarkupLine($"  Command Timeout: {profile.CommandTimeout ?? 60} seconds");
+                AnsiConsole.MarkupLine($"  Mail Notification: {(profile.EnableMailNotification ? "[green]Enabled[/]" : "[gray]Disabled[/]")}");
                 AnsiConsole.WriteLine();
             }
         }
 
-        static int ExecuteQueryWithStatus(string profile, string query, string format, FileInfo output)
+        static int ExecuteQueryWithStatus(string profile, string query, string format, FileInfo output, bool notify = false)
         {
             try
             {
                 if (!Profiles.ContainsKey(profile))
                 {
-                    AnsiConsole.MarkupLine($"[red]Profile '{profile}' not found. Use --list to see available profiles.[/]");
+                    string errorMessage = $"Profile '{profile}' not found. Use --list to see available profiles.";
+                    AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                     Log.Error("Profile '{Profile}' not found", profile);
+                    
+                    
+                    if (notify && MailSettings != null)
+                    {
+                        SendErrorNotification(profile, errorMessage);
+                    }
+                    
                     return (int)ErrorCodes.ProfileNotFound;
                 }
                 
+                var profileData = Profiles[profile];
                 string customOutputPath = output?.FullName ?? string.Empty;
                 
                 if (string.IsNullOrWhiteSpace(format))
                 {
-                    format = Profiles[profile].Format;
+                    format = profileData.Format;
                     if (string.IsNullOrWhiteSpace(format))
                     {
-                        AnsiConsole.MarkupLine("[red]No format specified in command or profile.[/]");
+                        string errorMessage = "No format specified in command or profile.";
+                        AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                         Log.Error("No format specified for profile '{Profile}'", profile);
+                        
+                        
+                        if (notify && profileData.EnableMailNotification && MailSettings != null)
+                        {
+                            SendErrorNotification(profile, errorMessage);
+                        }
+                        
                         return (int)ErrorCodes.ConfigurationError;
                     }
                 }
                 
                 if (!new[] { "JSON", "XML", "CSV", "TAB", "YAML", "AUTO" }.Contains(format.ToUpper()))
                 {
-                    AnsiConsole.MarkupLine($"[red]Invalid format: {format}. Must be one of: AUTO, JSON, XML, CSV, TAB, YAML[/]");
+                    string errorMessage = $"Invalid format: {format}. Must be one of: AUTO, JSON, XML, CSV, TAB, YAML";
+                    AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                     Log.Error("Invalid format '{Format}' specified", format);
+                    
+                    
+                    if (notify && profileData.EnableMailNotification && MailSettings != null)
+                    {
+                        SendErrorNotification(profile, errorMessage);
+                    }
+                    
                     return (int)ErrorCodes.FormatError;
                 }
                 
                 if (string.IsNullOrWhiteSpace(query))
                 {
-                    query = Profiles[profile].Query;
+                    query = profileData.Query;
                     if (string.IsNullOrWhiteSpace(query))
                     {
-                        AnsiConsole.MarkupLine("[red]No query specified in command or profile.[/]");
+                        string errorMessage = "No query specified in command or profile.";
+                        AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                         Log.Error("No query specified for profile '{Profile}'", profile);
+                        
+                        
+                        if (notify && profileData.EnableMailNotification && MailSettings != null)
+                        {
+                            SendErrorNotification(profile, errorMessage);
+                        }
+                        
                         return (int)ErrorCodes.ConfigurationError;
                     }
                 }
@@ -318,17 +446,28 @@ namespace MinimalSqlExport
                     }
                     catch (Exception ex)
                     {
-                        AnsiConsole.MarkupLine($"[red]Error creating output directory: {ex.Message}[/]");
+                        string errorMessage = $"Error creating output directory: {ex.Message}";
+                        AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                         Log.Error(ex, "Error creating output directory for path '{Path}'", customOutputPath);
+                        
+                        
+                        if (notify && profileData.EnableMailNotification && MailSettings != null)
+                        {
+                            SendErrorNotification(profile, errorMessage);
+                        }
+                        
                         return (int)ErrorCodes.OutputFileError;
                     }
                 }
                 
-                ExecuteQuery(profile, query, format, customOutputPath);
+                
+                string? outputPath = null;
+                ExecuteQuery(profile, query, format, customOutputPath, out outputPath);
                 return (int)ErrorCodes.Success; 
             }
             catch (SqlException ex)
             {
+                string errorMessage = $"SQL Error: {ex.Message}\nError Number: {ex.Number}";
                 Log.Error(ex, "SQL Error executing query: {Message}", ex.Message);
                 AnsiConsole.MarkupLine($"[red]SQL Error: {ex.Message}[/]");
                 AnsiConsole.MarkupLine($"[red]Error Number: {ex.Number}[/]");
@@ -342,22 +481,53 @@ namespace MinimalSqlExport
                     }
                 }
                 
+                
+                if (notify && Profiles.TryGetValue(profile, out var profileData) && 
+                    profileData.EnableMailNotification && MailSettings != null)
+                {
+                    SendErrorNotification(profile, errorMessage);
+                }
+                
                 return (int)ErrorCodes.QueryExecutionError;
             }
             catch (InvalidOperationException ex)
             {
+                string errorMessage = $"Connection configuration error: {ex.Message}";
                 Log.Error(ex, "Connection configuration error: {Message}", ex.Message);
-                AnsiConsole.MarkupLine($"[red]Connection configuration error: {ex.Message}[/]");
+                AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
+                
+                
+                if (notify && Profiles.TryGetValue(profile, out var profileData) && 
+                    profileData.EnableMailNotification && MailSettings != null)
+                {
+                    SendErrorNotification(profile, errorMessage);
+                }
+                
                 return (int)ErrorCodes.ConnectionError;
             }
             catch (IOException ex)
             {
+                string errorMessage = $"File I/O error: {ex.Message}";
                 Log.Error(ex, "File I/O error: {Message}", ex.Message);
-                AnsiConsole.MarkupLine($"[red]File I/O error: {ex.Message}[/]");
+                AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
+                
+                
+                if (notify && Profiles.TryGetValue(profile, out var profileData) && 
+                    profileData.EnableMailNotification && MailSettings != null)
+                {
+                    SendErrorNotification(profile, errorMessage);
+                }
+                
                 return (int)ErrorCodes.OutputFileError;
             }
             catch (Exception ex)
             {
+                string errorMessage = $"Error: {ex.Message}";
+                if (ex.InnerException != null)
+                {
+                    errorMessage += $"\nDetails: {ex.InnerException.Message}";
+                }
+                
                 Log.Error(ex, "Unhandled error executing query: {Message}", ex.Message);
                 AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
                 
@@ -367,14 +537,23 @@ namespace MinimalSqlExport
                     AnsiConsole.MarkupLine($"[red]Details: {ex.InnerException.Message}[/]");
                 }
                 
+                
+                if (notify && Profiles.TryGetValue(profile, out var profileData) && 
+                    profileData.EnableMailNotification && MailSettings != null)
+                {
+                    SendErrorNotification(profile, errorMessage);
+                }
+                
                 return (int)ErrorCodes.GeneralError;
             }
         }
 
         private static readonly JsonSerializerOptions CachedJsonOptions = new JsonSerializerOptions { WriteIndented = true }; 
 
-        static void ExecuteQuery(string profile, string query, string format, string? customOutputPath = null)
+        static void ExecuteQuery(string profile, string query, string format, string? customOutputPath, out string? outputPath)
         {
+            outputPath = null; 
+            
             if (!Profiles.ContainsKey(profile))
             {
                 Log.Error("Profile '{Profile}' not found", profile);
@@ -387,6 +566,9 @@ namespace MinimalSqlExport
             query ??= profileData.Query;
             format ??= profileData.Format;
             var outputProps = profileData.OutputProperties;
+            var output = new StringBuilder();
+            string fileExtension = format.ToLower();
+            
 
             if (string.IsNullOrWhiteSpace(connString))
             {
@@ -401,6 +583,16 @@ namespace MinimalSqlExport
                 AnsiConsole.MarkupLine("[red]Query is empty. Please specify a query.[/]");
                 return;
             }
+
+            if (string.IsNullOrWhiteSpace(format))
+            {
+                Log.Error("Empty format in profile '{Profile}'", profile);
+                AnsiConsole.MarkupLine("[red]Format is empty. Please specify a format.[/]");
+                return;
+            }
+
+            
+            List<Dictionary<string, object?>> rows = new();
 
             using var connection = new SqlConnection(connString);
             try
@@ -418,10 +610,8 @@ namespace MinimalSqlExport
                             ctx.Status("Connection failed");
                             Log.Error(ex, "SQL Connection error: {Message}", ex.Message);
                             
-                            
                             if (ex.InnerException != null)
                                 Log.Error(ex.InnerException, "Inner exception: {Message}", ex.InnerException.Message);
-                            
                             
                             Log.Error("Connection failed to: {Connection}", 
                                 MaskConnectionString(connString));
@@ -440,13 +630,10 @@ namespace MinimalSqlExport
             }
             catch (Exception)
             {
-                
                 AnsiConsole.MarkupLine("[red]Failed to connect to database.[/]");
                 throw;
             }
 
-            List<Dictionary<string, object?>> rows = new();
-            
             try
             {
                 using var command = new SqlCommand(query, connection);
@@ -487,7 +674,6 @@ namespace MinimalSqlExport
                             ctx.Status("Query execution failed");
                             Log.Error(ex, "SQL Error executing query: {Message}", ex.Message);
                             
-                            
                             var truncatedQuery = query.Length > 500 ? query.Substring(0, 500) + "..." : query;
                             Log.Error("Failed query: {Query}", truncatedQuery);
                             throw;
@@ -496,13 +682,10 @@ namespace MinimalSqlExport
             }
             catch (Exception)
             {
-                
                 AnsiConsole.MarkupLine("[red]Failed to execute query.[/]");
                 throw;
             }
 
-            var output = new StringBuilder();
-            string fileExtension = format.ToLower();  
             
             try
             {
@@ -537,12 +720,10 @@ namespace MinimalSqlExport
                 throw;
             }
 
-            string outputPath;
             try
             {
                 if (!string.IsNullOrWhiteSpace(customOutputPath))
                 {
-                    
                     outputPath = customOutputPath;
                     
                     var dirName = Path.GetDirectoryName(outputPath);
@@ -553,7 +734,6 @@ namespace MinimalSqlExport
                 }
                 else
                 {
-                    
                     var fileName = $"output_{DateTime.Now:yyyyMMdd_HHmmss}.{fileExtension.ToLower()}";
                     var outputDir = string.IsNullOrWhiteSpace(profileData.OutputDirectory)
                         ? Directory.GetCurrentDirectory()
@@ -563,7 +743,6 @@ namespace MinimalSqlExport
                     outputPath = Path.Combine(outputDir, fileName);
                 }
 
-                
                 File.WriteAllText(outputPath, output.ToString());
                 AnsiConsole.MarkupLine($"[green]Output written to:[/] [blue]{outputPath}[/]");
                 Log.Information("Output successfully written to: {Path}", outputPath);
@@ -575,7 +754,6 @@ namespace MinimalSqlExport
                 throw;
             }
         }
-        
         private static void FormatAsJson(List<Dictionary<string, object?>> rows, StringBuilder output, JsonSettings? settings)
         {
             if (rows.Count > 0 && rows[0].Count == 1)
@@ -745,6 +923,7 @@ namespace MinimalSqlExport
             AnsiConsole.MarkupLine("  --format, -f   : Output format: JSON, XML, CSV, TAB, YAML (overrides profile's format)");
             AnsiConsole.MarkupLine("  --output, -o   : Output file path (overrides profile's output directory)");
             AnsiConsole.MarkupLine("  --list, -l     : List available profiles");
+            AnsiConsole.MarkupLine("  --notify, -n   : Enable email notifications for errors");
             
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[yellow]Available Profiles:[/]");
@@ -864,6 +1043,152 @@ namespace MinimalSqlExport
             FormatAsDelimited(rows, output, "CSV", outputProps?.CSV);
             return detectedFormat;
         }
+
+        private static MailConfig? MailSettings { get; set; }
+
+        static void LoadOrCreateMailConfig()
+        {
+            string configPath = "mailconfig.json";
+            
+            if (!File.Exists(configPath))
+            {
+                var defaultConfig = new MailConfig
+                {
+                    SmtpServer = "127.0.0.1",
+                    SmtpPort = 25,
+                    UseSsl = false,
+                    From = "admin@localhost.com",
+                    To = "system@localhost.com",
+                    Subject = "[minimalsqlexport] SQL Export Notification",
+                    NotifyOnlyErrors = true
+                };
+                
+                string jsonString = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(configPath, jsonString);
+                Log.Information("Created default mail configuration file: {Path}", configPath);
+            }
+            
+            try
+            {
+                string json = File.ReadAllText(configPath);
+                MailSettings = JsonSerializer.Deserialize<MailConfig>(json);
+                Log.Debug("Loaded mail configuration from {Path}", configPath);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error loading mail configuration: {Message}", ex.Message);
+                AnsiConsole.MarkupLine("[yellow]Warning: Failed to load mail configuration. Notifications will be disabled.[/]");
+                MailSettings = null;
+            }
+        }
+
+        private static void SendErrorNotification(string profile, string error)
+        {
+            Log.Information("SendErrorNotification called for profile '{Profile}'", profile);
+            
+            
+            if (MailSettings == null)
+            {
+                Log.Warning("Mail settings are null. Cannot send notification.");
+                return;
+            }
+            
+            
+            if (!Profiles.TryGetValue(profile, out var profileData))
+            {
+                Log.Warning("Profile '{Profile}' not found. Cannot send notification.", profile);
+                return;
+            }
+            
+            
+            if (!profileData.EnableMailNotification)
+            {
+                Log.Warning("Notifications not enabled for profile '{Profile}'. Cannot send notification.", profile);
+                return;
+            }
+
+            
+            try
+            {
+                
+                Log.Information("Mail settings: Server={Server}, Port={Port}, SSL={SSL}, From={From}, To={To}",
+                    MailSettings.SmtpServer,
+                    MailSettings.SmtpPort,
+                    MailSettings.UseSsl,
+                    MailSettings.From,
+                    MailSettings.To);
+                
+                
+                if (string.IsNullOrWhiteSpace(MailSettings.From))
+                {
+                    Log.Error("From email address is empty");
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(MailSettings.To))
+                {
+                    Log.Error("To email address is empty");
+                    return;
+                }
+                
+                Log.Information("Sending error notification email for profile '{Profile}'", profile);
+                
+                
+                using var client = new System.Net.Mail.SmtpClient(MailSettings.SmtpServer, MailSettings.SmtpPort)
+                {
+                    EnableSsl = MailSettings.UseSsl
+                };
+
+                
+                if (!string.IsNullOrEmpty(MailSettings.Username) && !string.IsNullOrEmpty(MailSettings.Password))
+                {
+                    client.Credentials = new System.Net.NetworkCredential(MailSettings.Username, MailSettings.Password);
+                    Log.Information("Using credentials for SMTP authentication");
+                }
+                else
+                {
+                    Log.Information("No credentials provided for SMTP authentication");
+                }
+
+                
+                var message = new System.Net.Mail.MailMessage(
+                    MailSettings.From,
+                    MailSettings.To,
+                    MailSettings.Subject,
+                    BuildErrorEmailBody(profile, error)
+                );
+
+                
+                Log.Information("Attempting to send email to {Recipient}...", MailSettings.To);
+                client.Send(message);
+                Log.Information("Email notification sent successfully");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to send email notification: {Message}", ex.Message);
+                
+                if (ex.InnerException != null)
+                {
+                    Log.Error(ex.InnerException, "Inner exception: {Message}", ex.InnerException.Message);
+                }
+            }
+        }
+        private static string BuildErrorEmailBody(string profile, string error)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"SQL Export Error Notification");
+            sb.AppendLine($"----------------------------");
+            sb.AppendLine();
+            sb.AppendLine($"Profile: {profile}");
+            sb.AppendLine($"Timestamp: {DateTime.Now}");
+            sb.AppendLine($"Machine: {Environment.MachineName}");
+            sb.AppendLine();
+            sb.AppendLine($"Error Details:");
+            sb.AppendLine(error);
+            
+            return sb.ToString();
+        }
+
         public class Profile
         {
             public string Name { get; set; } = string.Empty;
@@ -872,7 +1197,8 @@ namespace MinimalSqlExport
             public string Format { get; set; } = string.Empty;
             public string OutputDirectory { get; set; } = string.Empty;
             public OutputSettings? OutputProperties { get; set; }
-            public int? CommandTimeout { get; set; } = 30; 
+            public int? CommandTimeout { get; set; } = 60; 
+            public bool EnableMailNotification { get; set; } = false;
         }
 
         public class OutputSettings
@@ -908,6 +1234,22 @@ namespace MinimalSqlExport
         public class JsonSettings
         {
             public bool WriteIndented { get; set; } = true; 
+        }
+        public class LoggingSettings
+        {
+            public string LogLevel { get; set; } = "Information";
+        }
+        public class MailConfig
+        {
+            public string SmtpServer { get; set; } = string.Empty;
+            public int SmtpPort { get; set; } = 25;
+            public bool UseSsl { get; set; } = false;
+            public string From { get; set; } = string.Empty;
+            public string To { get; set; } = string.Empty;
+            public string Subject { get; set; } = "[minimalsqlexport] SQL Export Error";
+            public string? Username { get; set; }
+            public string? Password { get; set; }
+            public bool NotifyOnlyErrors { get; set; } = true;
         }
     }
 }
