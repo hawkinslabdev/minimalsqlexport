@@ -82,6 +82,115 @@ Specify custom output file:
 MinimalSqlExport -p customers -o "C:\Reports\customers-march.csv"
 ```
 
+Enable email notifications for errors:
+```
+MinimalSqlExport -p customers -n
+```
+
+## New Features
+
+### Post-Processing with Stored Procedures
+
+After completing an export, you can now automatically run a stored procedure to perform additional tasks such as:
+
+- Recording the export in an audit table
+- Moving or processing the output file
+- Triggering additional business processes
+- Sending notifications
+
+Example profile with post-processing:
+```json
+{
+  "Name": "customers-with-postprocess",
+  "ConnectionString": "Server=MyServer;Database=Sales;Integrated Security=True;",
+  "Query": "SELECT * FROM Customers",
+  "Format": "CSV",
+  "OutputDirectory": "C:\\Reports\\Daily",
+  "PostProcess": {
+    "Name": "sp_LogExportCompletion",
+    "Schema": "dbo",
+    "RequireSuccess": true,
+    "CaptureReturnValue": true,
+    "CommandTimeout": 30,
+    "Parameters": [
+      {
+        "Name": "ExportFileName",
+        "Type": "varchar",
+        "Size": 255,
+        "Value": "${ExportFileName}"
+      },
+      {
+        "Name": "ExportPath",
+        "Type": "varchar",
+        "Size": 500,
+        "Value": "${ExportFilePath}"
+      },
+      {
+        "Name": "RowCount",
+        "Type": "int",
+        "Value": "${RowCount}"
+      },
+      {
+        "Name": "ExportTimestamp",
+        "Type": "datetime",
+        "Value": "${Timestamp}"
+      }
+    ]
+  }
+}
+```
+
+#### Special Variables for Post-Processing
+
+You can use the following variables in your stored procedure parameters:
+
+- `${ExportFilePath}` - Full path of the exported file
+- `${ExportFileName}` - Only the filename portion  
+- `${RowCount}` - Number of rows exported
+- `${Timestamp}` - Current date/time (format: yyyy-MM-dd HH:mm:ss)
+
+### Enhanced Email Notifications
+
+Configure email notifications through a dedicated config file (`mailconfig.json`):
+
+```json
+{
+  "SmtpServer": "smtp.example.com",
+  "SmtpPort": 587,
+  "UseSsl": true,
+  "Username": "notifications@example.com",
+  "Password": "your_secure_password",
+  "From": "sql-exports@example.com",
+  "To": "admin@example.com",
+  "Subject": "[MinimalSqlExport] SQL Export Notification",
+  "NotifyOnlyErrors": true
+}
+```
+
+Enable notifications for a specific profile by setting:
+```json
+"EnableMailNotification": true
+```
+
+### Dapper Integration for Improved Performance
+
+MinimalSqlExport now uses Dapper for database interactions, which provides:
+- Better performance and query efficiency
+- Improved parameter handling
+- Robust type conversions
+- More reliable connection management
+
+### Customizable Logging
+
+Control application logging through the `logsettings.json` file:
+```json
+{
+  "LogLevel": "Information"
+}
+```
+
+Available log levels: Debug, Information, Warning, Error
+
 ## Set Up Scheduled Reports
 
 ### Basic Windows Task
@@ -92,7 +201,7 @@ MinimalSqlExport -p customers -o "C:\Reports\customers-march.csv"
 4. Set when to run it (daily, weekly, etc.)
 5. Choose "Start a program"
 6. Browse to your MinimalSqlExport.exe location
-7. Add arguments: `-p customers -f CSV`
+7. Add arguments: `-p customers -f CSV -n`
 8. Click Finish
 
 ### For Multiple Reports
@@ -103,10 +212,10 @@ Create a batch file (daily_exports.bat):
 cd /d "C:\Tools\MinimalSqlExport"
 
 echo Exporting customers...
-MinimalSqlExport -p customers -f CSV
+MinimalSqlExport -p customers -f CSV -n
 
 echo Exporting orders...
-MinimalSqlExport -p orders -f JSON
+MinimalSqlExport -p orders -f JSON -n
 
 echo Done!
 ```
@@ -175,21 +284,6 @@ MinimalSqlExport -p profile -s
 Get email when exports fail by enabling notifications:
 ```
 MinimalSqlExport -p profile -n
-```
-
-To configure email settings, edit the profile JSON:
-```json
-"EnableMailNotification": true,
-"MailSettings": {
-  "SmtpServer": "smtp.mycompany.com",
-  "Port": 25,
-  "UseSSL": false,
-  "FromAddress": "alerts@mycompany.com",
-  "ToAddresses": ["user@mycompany.com"],
-  "Subject": "SQL Export Error",
-  "Username": "",
-  "Password": ""
-}
 ```
 
 You can also use PowerShell's `Send-MailMessage` in a batch file for more control over notifications:
