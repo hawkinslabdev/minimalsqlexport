@@ -12,5 +12,41 @@
       "Decimal": "."
     }
   },
+  "PostProcess": {
+    "Name": "LogExportActivity",
+    "Schema": "dbo",
+    "CaptureReturnValue": true,
+    "RequireSuccess": true,
+    "Parameters": [
+      {
+        "Name": "@ExportType",
+        "Type": "varchar",
+        "Value": "CustomerData",
+        "Size": 50
+      },
+      {
+        "Name": "@FilePath",
+        "Type": "varchar",
+        "Value": "${ExportFilePath}",
+        "Size": 500
+      },
+      {
+        "Name": "@RecordCount",
+        "Type": "int",
+        "Value": "${RowCount}"
+      },
+      {
+        "Name": "@ExportTime",
+        "Type": "datetime",
+        "Value": "${Timestamp}"
+      },
+      {
+        "Name": "@UserName",
+        "Type": "varchar",
+        "Value": "MinimalSqlExport",
+        "Size": 100
+      }
+    ]
+  },
   "EnableMailNotification": true
 }

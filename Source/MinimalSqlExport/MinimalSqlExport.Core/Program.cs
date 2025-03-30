@@ -293,7 +293,8 @@ namespace MinimalSqlExport
             try
             {
                 string? outputPath = null;
-                ExecuteQuery(profile, query, format, customOutputPath, out outputPath);
+                int rowCount = 0;
+                ExecuteQuery(profile, query, format, customOutputPath, out outputPath, out rowCount);
             }
             catch (SqlException ex)
             {
@@ -369,7 +370,6 @@ namespace MinimalSqlExport
                     AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                     Log.Error("Profile '{Profile}' not found", profile);
                     
-                    
                     if (notify && MailSettings != null)
                     {
                         SendErrorNotification(profile, errorMessage);
@@ -390,7 +390,6 @@ namespace MinimalSqlExport
                         AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                         Log.Error("No format specified for profile '{Profile}'", profile);
                         
-                        
                         if (notify && profileData.EnableMailNotification && MailSettings != null)
                         {
                             SendErrorNotification(profile, errorMessage);
@@ -405,7 +404,6 @@ namespace MinimalSqlExport
                     string errorMessage = $"Invalid format: {format}. Must be one of: AUTO, JSON, XML, CSV, TAB, YAML";
                     AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                     Log.Error("Invalid format '{Format}' specified", format);
-                    
                     
                     if (notify && profileData.EnableMailNotification && MailSettings != null)
                     {
@@ -423,7 +421,6 @@ namespace MinimalSqlExport
                         string errorMessage = "No query specified in command or profile.";
                         AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                         Log.Error("No query specified for profile '{Profile}'", profile);
-                        
                         
                         if (notify && profileData.EnableMailNotification && MailSettings != null)
                         {
@@ -451,7 +448,6 @@ namespace MinimalSqlExport
                         AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                         Log.Error(ex, "Error creating output directory for path '{Path}'", customOutputPath);
                         
-                        
                         if (notify && profileData.EnableMailNotification && MailSettings != null)
                         {
                             SendErrorNotification(profile, errorMessage);
@@ -463,7 +459,8 @@ namespace MinimalSqlExport
                 
                 
                 string? outputPath = null;
-                ExecuteQuery(profile, query, format, customOutputPath, out outputPath);
+                int rowCount = 0;
+                ExecuteQuery(profile, query, format, customOutputPath, out outputPath, out rowCount);
                 return (int)ErrorCodes.Success; 
             }
             catch (SqlException ex)
@@ -482,7 +479,6 @@ namespace MinimalSqlExport
                     }
                 }
                 
-                
                 if (notify && Profiles.TryGetValue(profile, out var profileData) && 
                     profileData.EnableMailNotification && MailSettings != null)
                 {
@@ -497,7 +493,6 @@ namespace MinimalSqlExport
                 Log.Error(ex, "Connection configuration error: {Message}", ex.Message);
                 AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
                 
-                
                 if (notify && Profiles.TryGetValue(profile, out var profileData) && 
                     profileData.EnableMailNotification && MailSettings != null)
                 {
@@ -511,7 +506,6 @@ namespace MinimalSqlExport
                 string errorMessage = $"File I/O error: {ex.Message}";
                 Log.Error(ex, "File I/O error: {Message}", ex.Message);
                 AnsiConsole.MarkupLine($"[red]{errorMessage}[/]");
-                
                 
                 if (notify && Profiles.TryGetValue(profile, out var profileData) && 
                     profileData.EnableMailNotification && MailSettings != null)
@@ -538,7 +532,6 @@ namespace MinimalSqlExport
                     AnsiConsole.MarkupLine($"[red]Details: {ex.InnerException.Message}[/]");
                 }
                 
-                
                 if (notify && Profiles.TryGetValue(profile, out var profileData) && 
                     profileData.EnableMailNotification && MailSettings != null)
                 {
@@ -548,12 +541,12 @@ namespace MinimalSqlExport
                 return (int)ErrorCodes.GeneralError;
             }
         }
-
         private static readonly JsonSerializerOptions CachedJsonOptions = new JsonSerializerOptions { WriteIndented = true }; 
 
-        static void ExecuteQuery(string profile, string query, string format, string? customOutputPath, out string? outputPath)
+        static void ExecuteQuery(string profile, string query, string format, string? customOutputPath, out string? outputPath, out int rowCount)
         {
-            outputPath = null; 
+            outputPath = null;
+            rowCount = 0; // Initialize the row count
             
             if (!Profiles.ContainsKey(profile))
             {
@@ -635,7 +628,7 @@ namespace MinimalSqlExport
                 throw;
             }
 
-           try
+        try
             {
                 DynamicParameters parameters = new DynamicParameters();
                 if (profileData.Parameters != null && profileData.Parameters.Count > 0)
@@ -688,6 +681,9 @@ namespace MinimalSqlExport
                 AnsiConsole.MarkupLine("[red]Failed to execute query.[/]");
                 throw;
             }
+            
+            // Store the row count for post-processing
+            rowCount = rows.Count;
             
             try
             {
@@ -748,6 +744,22 @@ namespace MinimalSqlExport
                 File.WriteAllText(outputPath, output.ToString());
                 AnsiConsole.MarkupLine($"[green]Output written to:[/] [blue]{outputPath}[/]");
                 Log.Information("Output successfully written to: {Path}", outputPath);
+                
+                // Add post-processing call
+                if (profileData.PostProcess != null && !string.IsNullOrWhiteSpace(profileData.PostProcess.Name))
+                {
+                    bool postProcessSuccess = ExecutePostProcessing(profile, outputPath, rowCount);
+                    if (!postProcessSuccess)
+                    {
+                        Log.Warning("Post-processing for profile '{Profile}' did not complete successfully", profile);
+                        AnsiConsole.MarkupLine("[yellow]Post-processing completed with warnings[/]");
+                    }
+                    else
+                    {
+                        Log.Information("Post-processing completed successfully for profile '{Profile}'", profile);
+                        AnsiConsole.MarkupLine("[green]Post-processing completed successfully[/]");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -756,6 +768,7 @@ namespace MinimalSqlExport
                 throw;
             }
         }
+
         private static void FormatAsJson(List<Dictionary<string, object?>> rows, StringBuilder output, JsonSettings? settings)
         {
             if (rows.Count > 0 && rows[0].Count == 1)
@@ -1045,7 +1058,188 @@ namespace MinimalSqlExport
             FormatAsDelimited(rows, output, "CSV", outputProps?.CSV);
             return detectedFormat;
         }
+        static bool ExecutePostProcessing(string profile, string outputPath, int rowCount)
+        {
+            if (!Profiles.ContainsKey(profile))
+            {
+                Log.Error("Profile '{Profile}' not found for post-processing", profile);
+                return false;
+            }
 
+            var profileData = Profiles[profile];
+            
+            if (profileData.PostProcess == null || string.IsNullOrWhiteSpace(profileData.PostProcess.Name))
+            {
+                // No post-processing configured, return success
+                return true;
+            }
+            
+            var ppConfig = profileData.PostProcess;
+            var connString = profileData.ConnectionString;
+
+            if (string.IsNullOrWhiteSpace(connString))
+            {
+                Log.Error("Empty connection string in profile '{Profile}'", profile);
+                AnsiConsole.MarkupLine("[red]Connection string is empty in profile.[/]");
+                return false;
+            }
+
+            using var connection = new SqlConnection(connString);
+            try
+            {
+                AnsiConsole.Status()
+                    .Start("Connecting to database for post-processing...", ctx => 
+                    {
+                        try
+                        {
+                            connection.Open();
+                            ctx.Status("Connection established");
+                        }
+                        catch (SqlException ex)
+                        {
+                            ctx.Status("Connection failed");
+                            Log.Error(ex, "SQL Connection error during post-processing: {Message}", ex.Message);
+                            Log.Error("Connection failed to: {Connection}", 
+                                MaskConnectionString(connString));
+                            throw;
+                        }
+                    });
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Failed to connect to database for post-processing: {ex.Message}[/]");
+                return false;
+            }
+            
+            try
+            {
+                // Construct fully qualified stored procedure name with schema
+                string fullSpName = string.IsNullOrWhiteSpace(ppConfig.Schema) 
+                    ? ppConfig.Name
+                    : $"{ppConfig.Schema}.{ppConfig.Name}";
+                
+                using var command = new SqlCommand(fullSpName, connection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+                command.CommandTimeout = ppConfig.CommandTimeout ?? profileData.CommandTimeout ?? 30;
+                
+                // Build parameter collection with variable substitution
+                if (ppConfig.Parameters != null)
+                {
+                    foreach (var param in ppConfig.Parameters)
+                    {
+                        string paramName = param.Name;
+                        if (!paramName.StartsWith("@"))
+                            paramName = "@" + paramName;
+                            
+                        string paramValue = param.Value ?? string.Empty;
+                        
+                        // Handle special variables in the parameter value
+                        if (!string.IsNullOrWhiteSpace(paramValue))
+                        {
+                            paramValue = paramValue
+                                .Replace("${ExportFilePath}", outputPath)
+                                .Replace("${ExportFileName}", Path.GetFileName(outputPath))
+                                .Replace("${RowCount}", rowCount.ToString())
+                                .Replace("${Timestamp}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                        }
+                        
+                        SqlParameter sqlParam;
+                        
+                        // Map parameter types to SqlDbType
+                        var paramType = GetSqlDbType(param.Type);
+                        
+                        if (param.Size.HasValue && param.Size.Value > 0)
+                        {
+                            sqlParam = new SqlParameter(paramName, paramType, param.Size.Value);
+                        }
+                        else
+                        {
+                            sqlParam = new SqlParameter(paramName, paramType);
+                        }
+                        
+                        if (string.IsNullOrWhiteSpace(paramValue))
+                        {
+                            sqlParam.Value = DBNull.Value;
+                        }
+                        else
+                        {
+                            sqlParam.Value = ConvertParameterValue(paramValue, param.Type);
+                        }
+                        
+                        command.Parameters.Add(sqlParam);
+                        Log.Debug("Added post-processing parameter {Name} of type {Type} with value {Value}", 
+                            paramName, param.Type, paramValue);
+                    }
+                }
+                
+                // Handle return value if requested
+                SqlParameter? returnParam = null;
+                if (ppConfig.CaptureReturnValue)
+                {
+                    returnParam = new SqlParameter("@RETURN_VALUE", System.Data.SqlDbType.Int);
+                    returnParam.Direction = System.Data.ParameterDirection.ReturnValue;
+                    command.Parameters.Add(returnParam);
+                }
+                
+                AnsiConsole.Status()
+                    .Start("Executing post-processing...", ctx => 
+                    {
+                        try
+                        {
+                            // Execute directly, don't create another query
+                            command.ExecuteNonQuery();
+                            ctx.Status("Post-processing completed");
+                        }
+                        catch (SqlException ex)
+                        {
+                            ctx.Status("Post-processing failed");
+                            Log.Error(ex, "SQL Error during post-processing: {Message}", ex.Message);
+                            Log.Error("Failed post-processing procedure: {Schema}.{Name}", 
+                                ppConfig.Schema ?? "dbo", ppConfig.Name);
+                            throw;
+                        }
+                    });
+                
+                // Handle return value
+                if (ppConfig.CaptureReturnValue && returnParam != null)
+                {
+                    var returnValue = returnParam.Value;
+                    Log.Information("Post-processing return value: {Value}", returnValue);
+                    
+                    // If return value is non-zero and RequireSuccess is true, consider it an error
+                    if (ppConfig.RequireSuccess && 
+                        returnValue != null && 
+                        returnValue != DBNull.Value && 
+                        Convert.ToInt32(returnValue) != 0)
+                    {
+                        AnsiConsole.MarkupLine($"[yellow]Post-processing returned non-zero value: {returnValue}[/]");
+                        if (ppConfig.RequireSuccess)
+                        {
+                            Log.Error("Post-processing failed with return code: {ReturnCode}", returnValue);
+                            return false;
+                        }
+                    }
+                }
+                
+                AnsiConsole.MarkupLine("[green]Post-processing completed successfully[/]");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red]Error during post-processing: {ex.Message}[/]");
+                Log.Error(ex, "Error executing post-processing procedure: {Message}", ex.Message);
+                
+                if (ppConfig.RequireSuccess)
+                {
+                    return false;
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[yellow]Post-processing error ignored as RequireSuccess=false[/]");
+                    return true;
+                }
+            }
+        }
         private static MailConfig? MailSettings { get; set; }
 
         static void LoadOrCreateMailConfig()
@@ -1211,6 +1405,7 @@ namespace MinimalSqlExport
             public string OutputDirectory { get; set; } = string.Empty;
             public OutputSettings? OutputProperties { get; set; }
             public int? CommandTimeout { get; set; } = 60; 
+            public PostProcessSettings? PostProcess { get; set; }
             public bool EnableMailNotification { get; set; } = false;
         }
         public class Parameter
@@ -1226,15 +1421,28 @@ namespace MinimalSqlExport
             public JsonSettings? JSON { get; set; }
             public YamlSettings? YAML { get; set; } 
         }
-
-        
+        public class PostProcessSettings
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Schema { get; set; } = "dbo";
+            public List<ProcedureParameter> Parameters { get; set; } = new List<ProcedureParameter>();
+            public bool CaptureReturnValue { get; set; } = false;
+            public bool RequireSuccess { get; set; } = true;
+            public int? CommandTimeout { get; set; }
+        }
+        public class ProcedureParameter
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Type { get; set; } = "varchar";
+            public string Value { get; set; } = string.Empty;
+            public int? Size { get; set; }
+        }
         public class YamlSettings
         {
             public bool IncludeHeader { get; set; } = true;
             public int IndentationLevel { get; set; } = 2;
             public bool EmitDefaults { get; set; } = false;
         }
-
         public class CsvSettings
         {
             public bool Header { get; set; } = true;
@@ -1242,7 +1450,6 @@ namespace MinimalSqlExport
             public string Separator { get; set; } = ",";
             public string Decimal { get; set; } = ".";
         }
-
         public class XmlSettings
         {
             public bool AppendHeader { get; set; } = true;
@@ -1268,6 +1475,124 @@ namespace MinimalSqlExport
             public string? Username { get; set; }
             public string? Password { get; set; }
             public bool NotifyOnlyErrors { get; set; } = true;
+        }
+        private static System.Data.SqlDbType GetSqlDbType(string typeName)
+        {
+            if (string.IsNullOrWhiteSpace(typeName))
+                return System.Data.SqlDbType.NVarChar;
+
+            switch (typeName.ToLowerInvariant())
+            {
+                case "bit":
+                    return System.Data.SqlDbType.Bit;
+                case "tinyint":
+                    return System.Data.SqlDbType.TinyInt;
+                case "smallint":
+                    return System.Data.SqlDbType.SmallInt;
+                case "int":
+                case "integer":
+                    return System.Data.SqlDbType.Int;
+                case "bigint":
+                    return System.Data.SqlDbType.BigInt;
+                case "decimal":
+                case "numeric":
+                    return System.Data.SqlDbType.Decimal;
+                case "money":
+                    return System.Data.SqlDbType.Money;
+                case "smallmoney":
+                    return System.Data.SqlDbType.SmallMoney;
+                case "real":
+                case "float":
+                    return System.Data.SqlDbType.Float;
+                case "date":
+                    return System.Data.SqlDbType.Date;
+                case "datetime":
+                    return System.Data.SqlDbType.DateTime;
+                case "datetime2":
+                    return System.Data.SqlDbType.DateTime2;
+                case "datetimeoffset":
+                    return System.Data.SqlDbType.DateTimeOffset;
+                case "smalldatetime":
+                    return System.Data.SqlDbType.SmallDateTime;
+                case "time":
+                    return System.Data.SqlDbType.Time;
+                case "char":
+                    return System.Data.SqlDbType.Char;
+                case "varchar":
+                    return System.Data.SqlDbType.VarChar;
+                case "text":
+                    return System.Data.SqlDbType.Text;
+                case "nchar":
+                    return System.Data.SqlDbType.NChar;
+                case "nvarchar":
+                    return System.Data.SqlDbType.NVarChar;
+                case "ntext":
+                    return System.Data.SqlDbType.NText;
+                case "binary":
+                    return System.Data.SqlDbType.Binary;
+                case "varbinary":
+                    return System.Data.SqlDbType.VarBinary;
+                case "image":
+                    return System.Data.SqlDbType.Image;
+                case "uniqueidentifier":
+                case "guid":
+                    return System.Data.SqlDbType.UniqueIdentifier;
+                case "xml":
+                    return System.Data.SqlDbType.Xml;
+                default:
+                    Log.Warning("Unknown SQL type: {Type}, defaulting to NVarChar", typeName);
+                    return System.Data.SqlDbType.NVarChar;
+            }
+        }
+
+        private static object ConvertParameterValue(string value, string typeName)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return DBNull.Value;
+
+            try
+            {
+                switch (typeName.ToLowerInvariant())
+                {
+                    case "bit":
+                        return bool.Parse(value);
+                    case "tinyint":
+                        return byte.Parse(value);
+                    case "smallint":
+                        return short.Parse(value);
+                    case "int":
+                    case "integer":
+                        return int.Parse(value);
+                    case "bigint":
+                        return long.Parse(value);
+                    case "decimal":
+                    case "numeric":
+                    case "money":
+                    case "smallmoney":
+                        return decimal.Parse(value);
+                    case "real":
+                    case "float":
+                        return double.Parse(value);
+                    case "date":
+                    case "datetime":
+                    case "datetime2":
+                    case "datetimeoffset":
+                    case "smalldatetime":
+                    case "time":
+                        return DateTime.Parse(value);
+                    case "uniqueidentifier":
+                    case "guid":
+                        return Guid.Parse(value);
+                    default:
+                        // For all string types and any unknown types, return as string
+                        return value;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Error converting parameter value '{Value}' to type {Type}. Using string value instead.", value, typeName);
+                return value;
+            }
         }
     }
 }
